@@ -1,6 +1,11 @@
 import { useState } from 'react'
 import PromptInput from './components/input/PromptInput'
 import Button from './components/button/Button'
+import Spinner from './components/spinner/spinner'
+
+import { downloadImage } from './utils/downloadImage'
+import { generateImage } from './service/generateImage'
+
 import './App.css'
 
 function App() {
@@ -8,31 +13,46 @@ function App() {
   const [imageUrl, setImageUrl] = useState(null)
   const [loading, setLoading] = useState(false)
   const [testMode, setTestMode] = useState(true)
+  const [promptError, setPromptError] = useState('')
+  const [generationError, setGenerationError] = useState('')
 
   const handleGenerate = async (e) => {
     e.preventDefault()
-    if (!prompt) return
-    setLoading(true)
 
-    if (testMode) {
-    setImageUrl('https://placehold.co/512x512?text=Placeholder') // Placeholder image
-    setLoading(false)
-    return
+    await generateImage({
+      prompt,
+      setPromptError,
+      setImageUrl,
+      setLoading,
+      setGenerationError,
+      testMode,
+    })
   }
 
-    try {
-      const res = await fetch('http://localhost:3001/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt }),
-      })
-      const data = await res.json()
-      setImageUrl(data.imageUrl)
-    } catch (err) {
-      console.error('Frontend error:', err)
-    } finally {
-      setLoading(false)
+  const handleCheckboxToggle = () => {
+    setTestMode((prev) => !prev)
+    setGenerationError('')
+  }
+
+  const renderResult = () => {
+    if (loading) return <Spinner />
+
+    if (generationError) {
+      return (
+        <div className="max-w-xl mx-auto mt-4 px-4">
+          <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded">
+            <img src="/images/error-icon.svg" alt="Error" className="w-5 h-5 shrink-0" />
+            <span>{generationError}</span>
+          </div>
+        </div>
+      )
     }
+
+    if (imageUrl) {
+      return <img src={imageUrl} alt="Generated" className="w-full h-full object-cover" />
+    }
+
+    return <p className="text-gray-400 italic">Your generated image will appear here</p>
   }
 
   return (
@@ -42,43 +62,54 @@ function App() {
 
       <div className="max-w-md mx-auto p-4 bg-white shadow-md rounded-xl">
         <form onSubmit={handleGenerate}>
-  <PromptInput
-    label="Your Prompt"
-    value={prompt}
-    onChange={(e) => setPrompt(e.target.value)}
-    placeholder="e.g. robot playing guitar"
-  />
-  
-  <label className="block mt-4">
-    <input
-      type="checkbox"
-      checked={testMode}
-      onChange={() => setTestMode(!testMode)}
-    />
-    <span className="ml-2">Test Mode (no credits)</span>
-  </label>
+          <PromptInput
+            label="Your Prompt"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            placeholder="e.g. robot playing guitar"
+            error={promptError}
+            disabled={loading}
+          />
 
-  <Button type="submit" disabled={loading}>
-    {loading ? 'Generating...' : 'Generate Image'}
-  </Button>
-</form>
+          {promptError && (
+            <span className="ml-2 block text-red-500 text-xs font-normal align-middle">
+              {promptError}
+            </span>
+          )}
 
+          <label className="flex items-center mt-4 cursor-pointer text-sm text-gray-700 gap-2 my-2.5">
+            <span>Test Mode (no credits)</span>
+            <input
+              type="checkbox"
+              checked={testMode}
+              onChange={handleCheckboxToggle}
+              className="ml-2 h-4 w-4 accent-blue-600 rounded border"
+            />
+          </label>
+
+          <Button type="submit" disabled={loading}>
+            {loading ? 'Generating...' : 'Generate Image'}
+          </Button>
+        </form>
       </div>
 
       <div className="max-w-xl mx-auto mt-8 text-center">
-  <div className="w-full h-[512px] bg-white border border-gray-300 rounded-xl shadow-inner flex items-center justify-center overflow-hidden">
-    {imageUrl ? (
-      <img
-        src={imageUrl}
-        alt="Generated"
-        className="w-full h-full object-cover"
-      />
-    ) : (
-      <p className="text-gray-400 italic">Your generated image will appear here</p>
-    )}
-  </div>
-</div>
+        <div
+          className={`w-full h-[512px] bg-white rounded-xl shadow-inner flex items-center justify-center overflow-hidden border-2 ${
+            generationError ? 'border-red-400' : 'border-gray-300'
+          }`}
+        >
+          {renderResult()}
+        </div>
 
+        {imageUrl && (
+          <div className="flex justify-center mt-4">
+            <Button onClick={() => downloadImage(imageUrl, prompt || 'ai-image')}>
+              Download Image
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
