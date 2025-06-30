@@ -1,12 +1,15 @@
 import { isValidPrompt } from '../utils/validation'
 
+const VITE_API_URL = import.meta.env.VITE_API_URL
+
 export const generateImage = async ({
   prompt,
   setImageUrl,
   setLoading,
   setPromptError,
   setGenerationError,
-  testMode
+  testMode,
+  setHistory
 }) => {
   if (!isValidPrompt(prompt, setPromptError)) return
 
@@ -14,15 +17,17 @@ export const generateImage = async ({
   setLoading(true)
 
   if (testMode) {
+    const placeholderUrl = 'https://placehold.co/512x512?text=Placeholder'
     setTimeout(() => {
-      setImageUrl('https://placehold.co/512x512?text=Placeholder')
+      setImageUrl(placeholderUrl)
       setLoading(false)
-    }, 3000)
+      setHistory?.(prev => [{ prompt, url: placeholderUrl }, ...prev]
+    )}, 3000)
     return
   }
 
   try {
-    const res = await fetch('http://localhost:3001/generate', {
+    const res = await fetch(`${VITE_API_URL}/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt }),
@@ -32,6 +37,8 @@ export const generateImage = async ({
     if (!res.ok) throw new Error(data.error || 'Something went wrong')
 
     setImageUrl(data.imageUrl)
+    setHistory?.(prev => [{ prompt, url: data.imageUrl }, ...prev])
+
   } catch (err) {
     console.error('Frontend error:', err)
     setGenerationError('❌ Failed to generate image. Please try again.')

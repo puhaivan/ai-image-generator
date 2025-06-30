@@ -3,7 +3,10 @@ const cors = require('cors')
 const dotenv = require('dotenv')
 const axios = require('axios')
 const FormData = require('form-data')
+
+
 const app = express()
+const API_URL = process.env.STABILITY_API_URL
 
 
 app.use(cors())
@@ -26,7 +29,7 @@ app.post('/generate', async (req, res) => {
     form.append('aspect_ratio', '1:1')
 
     const response = await axios.post(
-      'https://api.stability.ai/v2beta/stable-image/generate/core',
+      API_URL,
       form,
       {
         headers: {

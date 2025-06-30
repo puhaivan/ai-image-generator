@@ -19,5 +19,9 @@ export const isValidPrompt = (text, setPromptError) => {
     setPromptError('⚠️ Prompt cannot be numbers only')
     return false
   }
+  if (prompt.length > 100) {
+  setPromptError('Prompt is too long (max 200 characters)')
+  return false
+  }
   return true
 }

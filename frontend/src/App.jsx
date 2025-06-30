@@ -2,6 +2,8 @@ import { useState } from 'react'
 import PromptInput from './components/input/PromptInput'
 import Button from './components/button/Button'
 import Spinner from './components/spinner/spinner'
+import History from './components/history/History'
+import Modal from './components/modal/Modal'
 
 import { downloadImage } from './utils/downloadImage'
 import { generateImage } from './service/generateImage'
@@ -10,12 +12,23 @@ import './App.css'
 
 function App() {
   const [prompt, setPrompt] = useState('')
-  const [imageUrl, setImageUrl] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [testMode, setTestMode] = useState(true)
   const [promptError, setPromptError] = useState('')
   const [generationError, setGenerationError] = useState('')
 
+  const [history, setHistory] = useState([])
+
+  const [loading, setLoading] = useState(false)
+  const [testMode, setTestMode] = useState(true)
+  const [modalOpen, setModalOpen] = useState(false)
+
+  const [selectedImage, setSelectedImage] = useState(null)
+  const [imageUrl, setImageUrl] = useState(null)
+
+
+  const handleHistoryClick = (item) => {
+  setSelectedImage(item)
+  setModalOpen(true)
+}
   const handleGenerate = async (e) => {
     e.preventDefault()
 
@@ -25,6 +38,7 @@ function App() {
       setImageUrl,
       setLoading,
       setGenerationError,
+      setHistory,
       testMode,
     })
   }
@@ -109,7 +123,23 @@ function App() {
             </Button>
           </div>
         )}
+        <History
+         history={history}
+         onClick={handleHistoryClick} />
       </div>
+      {modalOpen && selectedImage && (
+  <Modal onClose={() => setModalOpen(false)}>
+    <img src={selectedImage.url} alt={selectedImage.prompt} className="w-full rounded mb-4" />
+    <p className="text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded px-3 py-2 mb-4 font-medium shadow-inner">
+  {selectedImage.prompt}
+    </p>
+    <div className="flex justify-end">
+      <Button onClick={() => downloadImage(selectedImage.url, selectedImage.prompt || 'ai-image')}>
+        Download
+      </Button>
+    </div>
+  </Modal>
+)}
     </div>
   )
 }
