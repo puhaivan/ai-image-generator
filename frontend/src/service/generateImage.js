@@ -12,6 +12,7 @@ export const generateImage = async ({
   setHistory
 }) => {
   if (!isValidPrompt(prompt, setPromptError)) return
+  console.log('VITE_API_URL:', import.meta.env.VITE_API_URL)
 
   setPromptError('')
   setLoading(true)

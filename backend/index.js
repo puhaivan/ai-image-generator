@@ -1,20 +1,20 @@
-const express = require('express')
-const cors = require('cors')
-const dotenv = require('dotenv')
-const axios = require('axios')
-const FormData = require('form-data')
+import dotenv from 'dotenv'
+dotenv.config()
+import express from 'express'
+import cors from 'cors'
+import axios from 'axios'
+import FormData from 'form-data'
+import { uploadImageToS3 } from './service/s3.js'
 
 
 const app = express()
 const API_URL = process.env.STABILITY_API_URL
 
-
 app.use(cors())
 app.use(express.json())
-dotenv.config()
-
 
 app.post('/generate', async (req, res) => {
+  
   const { prompt } = req.body
   console.log('🟡 Prompt received:', prompt)
 
@@ -23,24 +23,20 @@ app.post('/generate', async (req, res) => {
   try {
     const form = new FormData()
     form.append('prompt', prompt)
-    form.append('output_format', 'jpeg')         
-    form.append('mode', 'text-to-image')          
-    form.append('response_format', 'base64')      
+    form.append('output_format', 'jpeg')
+    form.append('mode', 'text-to-image')
+    form.append('response_format', 'base64')
     form.append('aspect_ratio', '1:1')
 
-    const response = await axios.post(
-      API_URL,
-      form,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.STABILITY_API_KEY}`,
-          ...form.getHeaders(),
-        },
-      }
-    )
+    const response = await axios.post(API_URL, form, {
+      headers: {
+        Authorization: `Bearer ${process.env.STABILITY_API_KEY}`,
+        ...form.getHeaders(),
+      },
+    })
 
     const imageBase64 = response.data.image
-    const imageUrl = `data:image/jpeg;base64,${imageBase64}`
+    const imageUrl = await uploadImageToS3(imageBase64, prompt)
 
     console.log('✅ Image generated successfully')
     res.json({ imageUrl })
@@ -50,6 +46,5 @@ app.post('/generate', async (req, res) => {
   }
 })
 
-
 const PORT = 3001
-app.listen(PORT, () => console.log(`✅ Server running on http://localhost:${PORT}`))
+app.listen(PORT, () => console.log(`✅ Server running on http://localhost:${PORT}` ))
