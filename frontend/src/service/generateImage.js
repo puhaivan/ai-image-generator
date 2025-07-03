@@ -31,6 +31,7 @@ export const generateImage = async ({
     const res = await fetch(`${VITE_API_URL}/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ prompt }),
     })
 

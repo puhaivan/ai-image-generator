@@ -1,12 +1,19 @@
+function Button({ children, onClick, type = 'button', disabled = false, variant = 'primary' }) {
+  const baseStyle = `px-4 py-2 w-full rounded text-white transition duration-200 hover:shadow-md`
+  const variants = {
+    primary: 'bg-blue-600 hover:bg-blue-700',
+    danger: 'bg-red-500 hover:bg-red-600',
+    disabled: 'bg-gray-400 cursor-not-allowed',
+  }
 
-  function Button({ children, onClick, type, disabled }) {
+  const variantStyle = disabled ? variants.disabled : variants[variant] || variants.primary
+
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className="px-4 py-2 w-full rounded bg-blue-600 text-white hover:bg-blue-700
-       disabled:bg-gray-400 cursor-pointer transition duration-200  hover:shadow-md"
+      className={`${baseStyle} ${variantStyle}`}
     >
       {children}
     </button>

@@ -5,11 +5,7 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import { v4 as uuidv4 } from 'uuid'
 import { Buffer } from 'buffer'
 
-
-console.log('AWS Access:', process.env.AWS_ACCESS_KEY_ID)
-console.log('AWS Secret:', process.env.AWS_SECRET_ACCESS_KEY ? '✅ Loaded' : '❌ Missing')
-console.log('AWS Region:', process.env.AWS_REGION)
-const s3 = new S3Client({
+export const s3 = new S3Client({
   region: process.env.AWS_REGION,
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
