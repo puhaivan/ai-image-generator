@@ -1,8 +1,9 @@
 export const downloadImage = async (url, filename) => {
   try {
-    const response = await fetch(url)
+    const response = await fetch(url, {
+      mode: 'cors',
+    })
     const blob = await response.blob()
-
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)
     link.download = `${filename}.jpg`
