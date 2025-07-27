@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "./constants"
+import { API_BASE_URL } from './constants'
 
 export const deleteImage = async (id) => {
   const res = await fetch(`${API_BASE_URL}/api/images/${id}`, {

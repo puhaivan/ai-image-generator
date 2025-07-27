@@ -1,17 +1,21 @@
 import Button from './button/Button'
+import hamburgerMenuIcon from '/images/hamburger-menu-icon.svg'
 
-function Header({
+const Header = ({
   user,
   authType,
+  setAuthType,
   setAuthOpen,
   setFormValues,
   setFormErrors,
   setSelectedCountryCode,
-  onLogout,
-}) {
+  setMobilePanelOpen,
+}) => {
   const handleLoginClick = () => {
+    setAuthType(authType === 'login' ? 'login' : 'register')
     setAuthOpen(true)
     setFormValues({
+      email: { value: '', required: true },
       phoneNumber: { value: '', required: true },
       password: { value: '', required: true },
       firstName: { value: '', required: true },
@@ -20,32 +24,34 @@ function Header({
     setFormErrors({})
     setSelectedCountryCode('+1')
   }
-
   return (
-    <header className="relative bg-gradient-to-r from-blue-100 to-purple-100 shadow-md rounded-xl px-6 py-6 mb-8">
-      <div className="lg:absolute w-fit mx-auto top-6 right-6 ">
-        {!user ? (
-          <Button onClick={handleLoginClick}>
-            {authType === 'login' ? 'Login' : 'Register'}
-          </Button>
-        ) : (
-          <div className="flex flex-col sm:flex-row items-center gap-2 bg-blue-50 border border-blue-200 px-4 py-2 rounded shadow-sm">
-            <div className="text-sm text-gray-800 font-medium">
-                 <h3>👋 Hello,</h3><h3 className="font-semibold text-blue-700">{user.firstName} {user.lastName}</h3>
-            </div>
-            <div>
-            <Button onClick={onLogout}>Logout</Button>
-            </div>
-          </div>
+    <header className="relative bg-gradient-to-r from-blue-100 to-purple-100 shadow-md rounded-xl px-6 py-6 mb-8 mr-4 ml-4 mt-4">
+      <div className="flex items-center justify-between">
+        {user && (
+          <button
+            onClick={() => setMobilePanelOpen(true)}
+            className="lg:hidden p-2 mr-2 rounded-md text-white hover:text-blue-700 cursor-pointer transition"
+          >
+            <img src={hamburgerMenuIcon} alt="Hamburger Menu" className="w-6 h-6" />
+          </button>
         )}
-      </div>
-      <div className="flex flex-col items-center text-center gap-2">
-        <h2 className="text-2xl font-bold text-gray-800 tracking-tight">
-          Start creating your images from your imagination
-        </h2>
-        <p className="text-sm text-gray-600 max-w-md">
-          Let your thoughts take visual form — turn your ideas into stunning AI-generated art.
-        </p>
+
+        <div className="text-center mx-auto">
+          <h1 className="text-3xl font-extrabold text-gray-800 drop-shadow-sm">
+            Start creating your images
+          </h1>
+          <p className="text-sm font-medium text-gray-600 mt-1 tracking-wide">
+            Let your thoughts take visual form — turn your ideas into stunning AI-generated art
+          </p>
+        </div>
+
+        <div className="absolute hidden lg:block right-4 top-1/2 -translate-y-1/2">
+          {!user && (
+            <Button onClick={handleLoginClick}>
+              {authType === 'login' ? 'Login' : 'Register'}
+            </Button>
+          )}
+        </div>
       </div>
     </header>
   )

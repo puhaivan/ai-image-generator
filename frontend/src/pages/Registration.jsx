@@ -13,11 +13,30 @@ function Registration({
 }) {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-         {formErrors.general && (
-  <div className="text-red-500 text-sm text-center mb-2">
-    {formErrors.general}
-  </div>
-)}
+      {formErrors.general && (
+        <div className="text-red-500 text-sm text-center mb-2">{formErrors.general}</div>
+      )}
+      <div className="flex flex-col gap-1">
+        <label className="text-sm font-medium text-gray-700">Email</label>
+        <Input
+          type="email"
+          placeholder="Email"
+          value={formValues.email.value}
+          onChange={(e) =>
+            setFormValues((prev) => ({
+              ...prev,
+              email: {
+                ...prev.email,
+                value: e.target.value,
+              },
+            }))
+          }
+        />
+        {formErrors.email && (
+          <span className="text-red-500 text-xs">{formErrors.email.message}</span>
+        )}
+      </div>
+
       <div className="flex flex-col gap-1">
         <label className="text-sm font-medium text-gray-700">Phone Number</label>
         <div className="flex gap-2">
@@ -32,7 +51,7 @@ function Registration({
               </option>
             ))}
           </select>
-            
+
           <Input
             placeholder="Phone Number"
             value={formValues.phoneNumber.value}
@@ -114,7 +133,9 @@ function Registration({
         )}
       </div>
 
-      <Button type="submit" fullWidth>Register</Button>
+      <Button type="submit" fullWidth>
+        Register
+      </Button>
 
       <button
         type="button"

@@ -3,13 +3,14 @@ export const FORM_FIELDS = {
   PASSWORD: 'password',
   FIRSTNAME: 'firstName',
   LASTNAME: 'lastName',
+  EMAIL: 'email',
 }
 
 const getValidationRule = (field) => {
   const rules = {
     [FORM_FIELDS.PHONE]: {
-     value: /^\d{7,12}$/,
-     message: 'Phone number must be between 7 and 12 digits',
+      value: /^\d{7,12}$/,
+      message: 'Phone number must be between 7 and 12 digits',
     },
     [FORM_FIELDS.PASSWORD]: {
       value: /^(?=.*[0-9])(?=.*[a-zA-Z])([a-zA-Z0-9]+){6,}$/,
@@ -22,6 +23,10 @@ const getValidationRule = (field) => {
     [FORM_FIELDS.LASTNAME]: {
       value: /^[a-zA-Z]{4,}$/,
       message: 'Last name must contain at least 4 letters and only letters',
+    },
+    [FORM_FIELDS.EMAIL]: {
+      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      message: 'Enter a valid email address',
     },
   }
 

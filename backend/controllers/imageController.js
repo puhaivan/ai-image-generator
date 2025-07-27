@@ -2,7 +2,6 @@ import Image from '../models/Image.js'
 import { DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { s3 } from '../service/s3.js'
 
-
 export const deleteImage = async (req, res) => {
   try {
     const image = await Image.findById(req.params.id)
@@ -14,10 +13,12 @@ export const deleteImage = async (req, res) => {
 
     const key = image.url.split('/').pop()
 
-    await s3.send(new DeleteObjectCommand({
-      Bucket: process.env.AWS_BUCKET_NAME,
-      Key: key,
-    }))
+    await s3.send(
+      new DeleteObjectCommand({
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: key,
+      })
+    )
 
     await image.deleteOne()
 
