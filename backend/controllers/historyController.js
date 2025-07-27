@@ -6,9 +6,9 @@ export const getUserHistory = async (req, res) => {
     const user = await User.findOne({ phoneNumber: req.user.phoneNumber })
     if (!user) return res.status(404).json({ error: 'User not found' })
 
-   const images = await Image.find({ userId: req.user.id })
-  .sort({ createdAt: -1 })
-  .select('url prompt createdAt')
+    const images = await Image.find({ userId: req.user.id })
+      .sort({ createdAt: -1 })
+      .select('url prompt createdAt')
 
     res.json(images)
   } catch (err) {

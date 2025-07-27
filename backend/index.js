@@ -1,44 +1,62 @@
+import path from 'path'
+import { fileURLToPath } from 'url'
 import dotenv from 'dotenv'
-dotenv.config()
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+dotenv.config({ path: path.resolve(__dirname, '.env') })
+
 import express from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
 import axios from 'axios'
 import FormData from 'form-data'
-import authRoutes from './routes/authRoutes.js'
 import cookieParser from 'cookie-parser'
-import Image from './models/Image.js'
-import User from './models/User.js'
-import historyRoutes from './routes/historyRoutes.js'
-import imageRoutes from './routes/imageRoutes.js'
+import passport from 'passport'
+import './auth/google.js' // ✅ Google strategy config
 
+// Routes
+import authGoogleRoutes from './routes/authGoogle.js'
+import authRoutes from './routes/authRoutes.js'
+import imageRoutes from './routes/imageRoutes.js'
+import historyRoutes from './routes/historyRoutes.js'
+
+// Middleware
 import { authenticateUser } from './middleware/authMiddleware.js'
 import { uploadImageToS3 } from './service/s3.js'
+import Image from './models/Image.js'
+import User from './models/User.js'
 
 const app = express()
-
-app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true,
-}))
+const PORT = 3001
 const API_URL = process.env.STABILITY_API_URL
+
+app.use(
+  cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+  })
+)
 
 app.use(express.json())
 app.use(cookieParser())
-app.use('/api/auth', authRoutes)
-app.use(authenticateUser)
+app.use(passport.initialize())
 
+app.use('/auth', authGoogleRoutes)
+app.use('/api/auth', authRoutes)
+
+app.use(authenticateUser)
 app.use('/api/images', imageRoutes)
 app.use('/api/history', historyRoutes)
 
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('✅ Connected to MongoDB'))
-.catch(err => console.error('❌ MongoDB connection error:', err))
-
-
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log('✅ Connected to MongoDB'))
+  .catch((err) => console.error('❌ MongoDB connection error:', err))
 
 app.post('/generate', async (req, res) => {
   const { prompt } = req.body
@@ -69,18 +87,17 @@ app.post('/generate', async (req, res) => {
       prompt,
     })
 
-    console.log('✅ Image generated and saved to DB')
-    res.json({ 
-    imageUrl: newImage.url,
-    prompt: newImage.prompt,
-    createdAt: newImage.createdAt 
-})
+    res.json({
+      imageUrl: newImage.url,
+      prompt: newImage.prompt,
+      createdAt: newImage.createdAt,
+    })
   } catch (err) {
-    console.error('❌ Generate error:', err.message)
+    console.error('❌ Image generation error:', err)
     res.status(500).json({ error: 'Failed to generate image' })
   }
 })
 
-
-const PORT = 3001
-app.listen(PORT, () => console.log(`✅ Server running on http://localhost:${PORT}` ))
+app.listen(PORT, () => {
+  console.log(`✅ Server running on http://localhost:${PORT}`)
+})

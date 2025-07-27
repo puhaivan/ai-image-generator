@@ -9,11 +9,9 @@ export const generateImage = async ({
   setPromptError,
   setGenerationError,
   testMode,
-  setHistory
+  setHistory,
 }) => {
   if (!isValidPrompt(prompt, setPromptError)) return
-  console.log('VITE_API_URL:', import.meta.env.VITE_API_URL)
-
   setPromptError('')
   setLoading(true)
 
@@ -22,8 +20,11 @@ export const generateImage = async ({
     setTimeout(() => {
       setImageUrl(placeholderUrl)
       setLoading(false)
-      setHistory?.(prev => [{ prompt, url: placeholderUrl }, ...prev]
-    )}, 3000)
+      setHistory?.((prev) => [
+        { prompt, url: placeholderUrl, createdAt: new Date().toISOString() },
+        ...prev,
+      ])
+    }, 3000)
     return
   }
 
@@ -39,8 +40,14 @@ export const generateImage = async ({
     if (!res.ok) throw new Error(data.error || 'Something went wrong')
 
     setImageUrl(data.imageUrl)
-    setHistory?.(prev => [{ prompt, url: data.imageUrl }, ...prev])
-
+    setHistory?.((prev) => [
+      {
+        prompt,
+        url: data.imageUrl,
+        createdAt: new Date().toISOString(),
+      },
+      ...prev,
+    ])
   } catch (err) {
     console.error('Frontend error:', err)
     setGenerationError('❌ Failed to generate image. Please try again.')

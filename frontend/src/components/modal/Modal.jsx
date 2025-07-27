@@ -1,4 +1,4 @@
-import CloseButton from "../button/closeButton"
+import CloseButton from '../button/closeButton'
 
 function Modal({ children, onClose }) {
   return (
