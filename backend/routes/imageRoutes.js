@@ -7,7 +7,7 @@ const router = express.Router()
 
 router.get('/mine', authenticateUser, async (req, res) => {
   try {
-    const images = await Image.find({ userId: req.user.id }).sort({ createdAt: -1 })
+    const images = await Image.find({ userId: req.user._id }).sort({ createdAt: -1 })
     res.json(images)
   } catch (err) {
     console.error('❌ Error fetching images:', err.message)

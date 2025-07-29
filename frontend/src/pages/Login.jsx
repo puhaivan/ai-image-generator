@@ -1,10 +1,31 @@
 import Input from '../components/input/Input'
 import Button from '../components/button/Button'
 import { API_BASE_URL } from '../utils/constants'
+import { useEffect } from 'react'
+import { toast } from 'react-toastify'
 
-function Login({ formValues, setFormValues, formErrors, onSubmit, switchAuthType }) {
+function Login({
+  formValues,
+  setFormValues,
+  formErrors,
+  onSubmit,
+  switchAuthType,
+  setShowForgotPassword,
+  setAuthOpen,
+  setResetStep,
+  setShowResetModal,
+}) {
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const error = params.get('error')
+
+    if (error === 'auth_method') {
+      toast.error('❌ This email is registered using a different login method')
+    }
+  }, [])
+
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} noValidate className="space-y-4">
       {formErrors.general && (
         <div className="text-red-500 text-sm text-center mb-2">{formErrors.general}</div>
       )}
@@ -12,7 +33,7 @@ function Login({ formValues, setFormValues, formErrors, onSubmit, switchAuthType
       <div className="flex flex-col gap-1">
         <label className="text-sm font-medium text-gray-700">Email</label>
         <Input
-          type="email"
+          type="text"
           placeholder="Email"
           value={formValues.email?.value || ''}
           onChange={(e) =>
@@ -54,7 +75,19 @@ function Login({ formValues, setFormValues, formErrors, onSubmit, switchAuthType
           </span>
         )}
       </div>
-
+      <button
+        type="button"
+        className="text-sm text-blue-600 underline mt-2"
+        onClick={() => {
+          console.log('Clicked Forgot Password')
+          setResetStep('request')
+          setAuthOpen(false)
+          setShowResetModal(false)
+          setShowForgotPassword(true)
+        }}
+      >
+        Forgot password?
+      </button>
       <Button type="submit" fullWidth>
         Login
       </Button>
@@ -71,7 +104,7 @@ function Login({ formValues, setFormValues, formErrors, onSubmit, switchAuthType
         onClick={() => {
           window.location.href = `${API_BASE_URL}/auth/google`
         }}
-        className="flex items-center justify-center w-full border border-gray-300 rounded-md bg-white text-gray-700 font-medium px-4 py-2 hover:shadow-md transition"
+        className="flex items-center justify-center w-full border cursor-pointer border-gray-300 rounded-md bg-white text-gray-700 font-medium px-4 py-2 hover:shadow-md transition"
       >
         <img src="/images/google-icon.svg" alt="Google" className="h-5 w-5 mr-3" />
         <span className="text-sm">Sign in with Google</span>
@@ -79,7 +112,7 @@ function Login({ formValues, setFormValues, formErrors, onSubmit, switchAuthType
 
       <button
         type="button"
-        className="text-sm text-blue-600 underline mt-2"
+        className="text-sm text-blue-600 cursor-pointer underline mt-2"
         onClick={switchAuthType}
       >
         Don’t have an account? Register

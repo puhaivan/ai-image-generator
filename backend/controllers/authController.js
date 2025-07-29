@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken'
 import User from '../models/User.js'
+import crypto from 'crypto'
+import sendEmail from '../utils/sendEmail.js'
 
 const isProduction = process.env.NODE_ENV === 'production'
 
@@ -8,17 +10,28 @@ const generateToken = (user) => {
     expiresIn: '7d',
   })
 }
+
 export const getMe = async (req, res) => {
   try {
     if (req.user) {
+      if (!req.user.isVerified) {
+        return res.status(403).json({
+          error: 'Email not verified',
+          requiresVerification: true,
+          email: req.user.email,
+        })
+      }
+
       return res.json({
         email: req.user.email,
+        phoneNumber: req.user.phoneNumber,
         firstName: req.user.firstName,
         lastName: req.user.lastName,
         avatar: req.user.avatar,
-        method: 'google',
+        method: req.user.loginMethod,
       })
     }
+
     const token = req.cookies.token
     if (!token) return res.status(401).json({ error: 'Not authenticated' })
 
@@ -27,12 +40,21 @@ export const getMe = async (req, res) => {
 
     if (!user) return res.status(404).json({ error: 'User not found' })
 
+    if (!user.isVerified) {
+      return res.status(403).json({
+        error: 'Email not verified',
+        requiresVerification: true,
+        email: user.email,
+      })
+    }
+
     res.json({
       email: user.email,
       phoneNumber: user.phoneNumber,
       firstName: user.firstName,
       lastName: user.lastName,
-      method: 'jwt',
+      avatar: user.avatar,
+      method: user.loginMethod,
     })
   } catch (err) {
     console.error('❌ GetMe error:', err.message)
@@ -41,12 +63,40 @@ export const getMe = async (req, res) => {
 }
 
 export const logout = (req, res) => {
-  res.clearCookie('token', {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'strict' : 'lax',
-  })
-  res.json({ message: 'Logout successful' })
+  try {
+    const finish = () => {
+      res.clearCookie('token', {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? 'strict' : 'lax',
+      })
+      res.clearCookie('connect.sid')
+      res.status(200).json({ message: 'Logout successful' })
+    }
+
+    if (typeof req.logout === 'function') {
+      req.logout((err) => {
+        if (err) {
+          console.error('Logout error:', err)
+          return res.status(500).json({ message: 'Logout failed' })
+        }
+
+        if (req.session) {
+          req.session.destroy((err) => {
+            if (err) console.error('Session destroy error:', err)
+            finish()
+          })
+        } else {
+          finish()
+        }
+      })
+    } else {
+      finish()
+    }
+  } catch (err) {
+    console.error('❌ Logout unexpected error:', err)
+    res.status(500).json({ message: 'Unexpected logout error' })
+  }
 }
 
 export const register = async (req, res) => {
@@ -69,14 +119,19 @@ export const register = async (req, res) => {
       return res.status(400).json({ error: 'Invalid email format' })
     }
 
-    const existingUser = await User.findOne({
-      $or: [{ phoneNumber }, { email }],
-    })
+    const existingUser = await User.findOne({ email })
 
     if (existingUser) {
-      return res.status(400).json({ error: 'User already exists' })
-    }
+      const method = existingUser.loginMethod
 
+      const error =
+        method === 'google'
+          ? 'This email is already registered via Google. Please log in with Google.'
+          : 'Email is already registered. Please log in.'
+
+      return res.status(400).json({ error })
+    }
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString()
     const newUser = new User({
       phoneNumber,
       password,
@@ -84,8 +139,16 @@ export const register = async (req, res) => {
       lastName,
       email,
       loginMethod: 'local',
+      isVerified: false,
+      verificationCode,
     })
+
     await newUser.save()
+    await sendEmail(
+      email,
+      'Verify your email',
+      `Hello ${firstName}, your verification code is: ${verificationCode}`
+    )
 
     const token = generateToken(newUser)
     res.cookie('token', token, {
@@ -98,6 +161,20 @@ export const register = async (req, res) => {
     res.json({ message: 'Registration successful', token })
   } catch (err) {
     console.error('❌ Registration error:', err.message)
+
+    if (err.code === 11000) {
+      const duplicateField = Object.keys(err.keyValue)[0]
+      const duplicateValue = err.keyValue[duplicateField]
+      return res.status(400).json({
+        error:
+          duplicateField === 'email'
+            ? 'This email is already registered'
+            : duplicateField === 'phoneNumber'
+              ? 'This phone number is already registered'
+              : `Duplicate value: ${duplicateValue}`,
+      })
+    }
+
     res.status(500).json({ error: 'Server error during registration' })
   }
 }
@@ -111,13 +188,28 @@ export const login = async (req, res) => {
     }
 
     const user = await User.findOne({ email })
+
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' })
+    }
+
+    if (user.loginMethod === 'google') {
+      return res.status(400).json({
+        error: 'This email is registered via Google. Please use Google login.',
+      })
     }
 
     const isMatch = await user.comparePassword(password)
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid email or password' })
+    }
+
+    if (!user.isVerified) {
+      return res.status(200).json({
+        requiresVerification: true,
+        email: user.email,
+        message: 'Please verify your email',
+      })
     }
 
     const token = generateToken(user)
@@ -132,5 +224,102 @@ export const login = async (req, res) => {
   } catch (err) {
     console.error('❌ Login error:', err.message)
     res.status(500).json({ error: 'Server error during login' })
+  }
+}
+
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body
+    const user = req.user
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Both current and new passwords are required' })
+    }
+
+    const isMatch = await user.comparePassword(currentPassword)
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Current password is incorrect' })
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters' })
+    }
+
+    user.password = newPassword
+    await user.save()
+
+    res.json({ message: 'Password changed successfully' })
+  } catch (err) {
+    console.error('❌ Change password error:', err)
+    res.status(500).json({ error: 'Server error during password change' })
+  }
+}
+
+export const verifyEmail = async (req, res) => {
+  const { email, code } = req.body
+
+  const user = await User.findOne({ email })
+  if (!user) return res.status(404).json({ error: 'User not found' })
+
+  if (user.isVerified) return res.status(400).json({ error: 'User already verified' })
+
+  if (user.verificationCode !== code) {
+    return res.status(400).json({ error: 'Invalid verification code' })
+  }
+
+  user.isVerified = true
+  user.verificationCode = undefined
+  await user.save()
+
+  const token = generateToken(user)
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'strict' : 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  })
+
+  res.json({ message: 'Email verified successfully', token })
+}
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body
+    const user = await User.findOne({ email })
+    if (!user) return res.status(404).json({ error: 'No user with that email found' })
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString()
+    user.resetCode = code
+    user.resetCodeExpires = Date.now() + 15 * 60 * 1000
+    await user.save()
+
+    await sendEmail(user.email, 'Reset Your Password', `Your code is: ${code}`)
+
+    res.json({ message: 'Reset code sent to your email' })
+  } catch (err) {
+    console.error('❌ Forgot Password error:', err.message)
+    res.status(500).json({ error: 'Server error during forgot password' })
+  }
+}
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, code, newPassword } = req.body
+    const user = await User.findOne({ email })
+    if (!user) return res.status(404).json({ error: 'User not found' })
+
+    if (user.resetCode !== code || !user.resetCodeExpires || user.resetCodeExpires < Date.now()) {
+      return res.status(400).json({ error: 'Invalid or expired reset code' })
+    }
+
+    user.password = newPassword
+    user.resetCode = undefined
+    user.resetCodeExpires = undefined
+    await user.save()
+
+    res.json({ message: 'Password has been reset successfully' })
+  } catch (err) {
+    console.error('❌ Reset Password error:', err.message)
+    res.status(500).json({ error: 'Server error during password reset' })
   }
 }

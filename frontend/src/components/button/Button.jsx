@@ -1,4 +1,11 @@
-function Button({ children, onClick, type = 'button', disabled = false, variant = 'primary' }) {
+function Button({
+  children,
+  onClick,
+  type = 'button',
+  disabled = false,
+  variant = 'primary',
+  className = '',
+}) {
   const baseStyle = `px-4 py-2 w-full rounded text-white transition duration-200 hover:shadow-md`
   const variants = {
     primary: 'bg-blue-600 hover:bg-blue-700',
@@ -13,7 +20,7 @@ function Button({ children, onClick, type = 'button', disabled = false, variant 
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`${baseStyle} ${variantStyle}`}
+      className={`${baseStyle} ${variantStyle} cursor-pointer ${className}`}
     >
       {children}
     </button>

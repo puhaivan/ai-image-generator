@@ -18,7 +18,7 @@ export const useHistory = (user) => {
           setHistory(data)
         }
       } catch (err) {
-        console.error('Failed to load history:', err)
+        console.error('❌ Failed to load history:', err)
       }
     }
 
@@ -28,17 +28,27 @@ export const useHistory = (user) => {
   }, [user])
 
   const handleHistoryClick = (item) => {
+    if (!item || !item._id) {
+      console.warn('⚠️ Cannot open modal: image is missing _id', item)
+      return
+    }
+
     setSelectedImage(item)
     setModalOpen(true)
   }
 
   const handleDelete = async (id) => {
+    if (!id || typeof id !== 'string') {
+      console.error('❌ Cannot delete image: ID is missing or invalid')
+      return
+    }
+
     try {
       await deleteImage(id)
       setHistory((prev) => prev.filter((img) => img._id !== id))
       setModalOpen(false)
     } catch (err) {
-      console.error('❌ Could not delete:', err.message)
+      console.error('❌ Could not delete image:', err.message)
     }
   }
 

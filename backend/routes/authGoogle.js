@@ -14,30 +14,28 @@ router.get(
 
 router.get(
   '/google/callback',
-  (req, res, next) => {
-    next()
-  },
   passport.authenticate('google', {
-    failureRedirect: '/login',
+    failureRedirect: '/auth/google/failure',
     session: false,
   }),
   (req, res) => {
-    if (!req.user) {
-      console.error('❌ No user returned from Google')
-      return res.status(401).json({ error: 'No user returned from Google' })
-    }
-
-    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '7d' })
+    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, {
+      expiresIn: '7d',
+    })
 
     res.cookie('token', token, {
       httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
 
-    res.redirect('http://localhost:5173/auth-success')
+    res.redirect('http://localhost:5173')
   }
 )
+
+router.get('/google/failure', (req, res) => {
+  res.redirect('http://localhost:5173/?authOpen=login&error=auth_method')
+})
 
 export default router
