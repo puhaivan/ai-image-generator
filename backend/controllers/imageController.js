@@ -3,11 +3,13 @@ import { DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { s3 } from '../service/s3.js'
 
 export const deleteImage = async (req, res) => {
+  console.log('🧪 DELETE params:', req.params)
+  console.log('🧪 DELETE req.user:', req.user)
   try {
     const image = await Image.findById(req.params.id)
     if (!image) return res.status(404).json({ error: 'Image not found' })
 
-    if (image.userId.toString() !== req.user.id) {
+    if (image.userId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: 'Not authorized to delete this image' })
     }
 

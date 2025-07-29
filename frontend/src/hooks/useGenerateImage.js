@@ -27,9 +27,10 @@ export const useGenerateImage = ({
       setImageUrl(data.imageUrl)
       setHistory?.((prev) => [
         {
+          _id: data._id,
           prompt,
           url: data.imageUrl,
-          createdAt: new Date().toISOString(),
+          createdAt: data.createdAt,
         },
         ...prev,
       ])

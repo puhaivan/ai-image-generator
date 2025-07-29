@@ -14,17 +14,25 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        const existingUser = await User.findOne({ email: profile.emails[0].value })
+        const email = profile.emails[0].value
+        const existingUser = await User.findOne({ email })
 
-        if (existingUser) return done(null, existingUser)
+        if (existingUser) {
+          if (existingUser.loginMethod !== 'google') {
+            return done(null, false, { message: 'auth_method' })
+          }
+
+          return done(null, existingUser)
+        }
 
         const newUser = await User.create({
           googleId: profile.id,
-          email: profile.emails[0].value,
-          firstName: profile.name.givenName || '',
-          lastName: profile.name.familyName || '',
-          avatar: profile.photos[0].value,
+          email,
+          firstName: profile.name?.givenName || '',
+          lastName: profile.name?.familyName || '',
+          avatar: profile.photos?.[0]?.value || '',
           loginMethod: 'google',
+          isVerified: true,
         })
 
         return done(null, newUser)

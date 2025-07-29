@@ -1,5 +1,6 @@
 import Input from '../components/input/Input'
 import Button from '../components/button/Button'
+import Spinner from '../components/spinner/spinner'
 import { COUNTRY_CODES } from '../utils/constants'
 
 function Registration({
@@ -10,16 +11,17 @@ function Registration({
   setSelectedCountryCode,
   onSubmit,
   switchAuthType,
+  loading,
 }) {
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} noValidate className="space-y-4">
       {formErrors.general && (
         <div className="text-red-500 text-sm text-center mb-2">{formErrors.general}</div>
       )}
       <div className="flex flex-col gap-1">
         <label className="text-sm font-medium text-gray-700">Email</label>
         <Input
-          type="email"
+          type="text"
           placeholder="Email"
           value={formValues.email.value}
           onChange={(e) =>
@@ -133,8 +135,14 @@ function Registration({
         )}
       </div>
 
-      <Button type="submit" fullWidth>
-        Register
+      <Button type="submit" fullWidth disabled={loading}>
+        {loading ? (
+          <div className="flex justify-center items-center">
+            <Spinner size={4} color="blue" message="" />
+          </div>
+        ) : (
+          'Register'
+        )}
       </Button>
 
       <button
