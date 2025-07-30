@@ -6,8 +6,6 @@ import { toast } from 'react-toastify'
 
 export const useAuth = () => {
   const [user, setUser] = useState(null)
-  const [authType, setAuthType] = useState('register')
-  const [authOpen, setAuthOpen] = useState(false)
   const [formErrors, setFormErrors] = useState({})
   const [selectedCountryCode, setSelectedCountryCode] = useState('+1')
   const [searchParams] = useSearchParams()
@@ -19,9 +17,7 @@ export const useAuth = () => {
   const [forgotLoading, setForgotLoading] = useState(false)
   const [forgotError, setForgotError] = useState(null)
   const [resetStep, setResetStep] = useState('request')
-  const [showForgotPassword, setShowForgotPassword] = useState(false)
-  const [showResetModal, setShowResetModal] = useState(false)
-  const [forgotEmail, setForgotEmail] = useState('')
+
   const [resetting, setResetting] = useState(false)
   const [resetError, setResetError] = useState('')
 
@@ -36,21 +32,14 @@ export const useAuth = () => {
   })
 
   useEffect(() => {
-    const authOpenParam = searchParams.get('authOpen')
-    if (authOpenParam === 'login') {
-      setAuthType('login')
-      setAuthOpen(true)
-    } else if (authOpenParam === 'register') {
-      setAuthType('register')
-      setAuthOpen(true)
-    }
-
     const localEmail = localStorage.getItem('pendingEmail')
     const shouldVerify = localStorage.getItem('showVerification') === 'true'
 
     if (shouldVerify && localEmail) {
       setPendingEmail(localEmail)
       setShowVerification(true)
+    } else if (localEmail) {
+      setPendingEmail(localEmail)
     }
   }, [searchParams])
 
@@ -66,12 +55,10 @@ export const useAuth = () => {
 
       if (res.status === 403) {
         const data = await res.json()
-
         if (data.requiresVerification && data.email) {
           setPendingEmail(data.email)
           setShowVerification(true)
         }
-
         throw new Error('Email not verified')
       }
 
@@ -103,7 +90,6 @@ export const useAuth = () => {
 
     if (res.ok) {
       await loadUser()
-      setAuthOpen(false)
       toast.success('Login successful')
       navigate('/')
     } else {
@@ -117,7 +103,9 @@ export const useAuth = () => {
   const handleAuthSubmit = async (e) => {
     e.preventDefault()
 
-    const fieldsToValidate = authType === 'login' ? ['email', 'password'] : Object.keys(formValues)
+    const path = window.location.pathname
+    const isLogin = path.includes('/auth/login')
+    const fieldsToValidate = isLogin ? ['email', 'password'] : Object.keys(formValues)
 
     const filteredValues = Object.fromEntries(
       Object.entries(formValues).filter(([key]) => fieldsToValidate.includes(key))
@@ -136,7 +124,7 @@ export const useAuth = () => {
       })
     )
 
-    if (authType === 'login') {
+    if (isLogin) {
       await handleLogin(payload)
     } else {
       try {
@@ -163,6 +151,7 @@ export const useAuth = () => {
         setShowVerification(true)
         localStorage.setItem('pendingEmail', payload.email)
         localStorage.setItem('showVerification', 'true')
+        navigate('/auth/verify')
       } catch (err) {
         console.error('Registration failed:', err)
         setFormErrors((prev) => ({
@@ -191,7 +180,6 @@ export const useAuth = () => {
         await loadUser()
         setShowVerification(false)
         setPendingEmail('')
-        setAuthOpen(false)
         resetForm()
         toast.success('Email verified and logged in!')
         setVerificationError(null)
@@ -202,8 +190,29 @@ export const useAuth = () => {
         setVerificationError(data.error || 'Invalid verification code')
       }
     } catch (err) {
-      console.error('Verification failed:', err)
-      toast.error('Verification failed')
+      toast.error('Verification failed:', err)
+    } finally {
+      setVerifying(false)
+    }
+  }
+
+  const handleResendVerificationCode = async () => {
+    setVerifying(true)
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/resend-verification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email: pendingEmail }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) throw new Error(data.error || 'Failed to resend verification code')
+
+      toast.success('Verification code resent to your email')
+    } catch (err) {
+      toast.error('Verification failed:', err)
     } finally {
       setVerifying(false)
     }
@@ -237,7 +246,7 @@ export const useAuth = () => {
     })
 
     setUser(null)
-    setAuthType('login')
+    navigate('/')
     toast.success('Logged out')
   }
 
@@ -258,11 +267,9 @@ export const useAuth = () => {
 
       toast.success('Reset code sent to your email')
       setPendingEmail(email)
-      setForgotEmail(email)
-
-      setShowForgotPassword(false)
-      setShowResetModal(true)
-      setResetStep('verify')
+      localStorage.setItem('pendingEmail', email)
+      console.log('Navigating to /auth/reset')
+      navigate('/auth/reset')
     } catch (err) {
       setForgotError(err.message)
     } finally {
@@ -286,8 +293,30 @@ export const useAuth = () => {
       if (!res.ok) throw new Error(data.error || 'Failed to reset password')
 
       toast.success('Password reset successful. You can now log in.')
-      setShowResetModal(false)
-      setAuthType('login')
+      localStorage.removeItem('pendingEmail')
+      navigate('/auth/login')
+    } catch (err) {
+      setResetError(err.message)
+    } finally {
+      setResetting(false)
+    }
+  }
+
+  const handleResendResetCode = async () => {
+    setResetting(true)
+    setResetError('')
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: pendingEmail }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) throw new Error(data.error || 'Failed to resend reset code')
+
+      toast.success('Reset code resent to your email')
     } catch (err) {
       setResetError(err.message)
     } finally {
@@ -298,10 +327,6 @@ export const useAuth = () => {
   return {
     user,
     setUser,
-    authType,
-    setAuthType,
-    authOpen,
-    setAuthOpen,
     formValues,
     setFormValues,
     formErrors,
@@ -320,16 +345,12 @@ export const useAuth = () => {
     handleForgotPassword,
     forgotLoading,
     forgotError,
-    resetStep,
-    setShowForgotPassword,
-    showForgotPassword,
-    showResetModal,
-    setShowResetModal,
-    forgotEmail,
-    setForgotEmail,
     handleResetPassword,
     resetting,
     resetError,
     setResetStep,
+    resetStep,
+    handleResendResetCode,
+    handleResendVerificationCode,
   }
 }

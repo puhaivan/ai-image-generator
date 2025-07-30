@@ -8,6 +8,7 @@ import {
   verifyEmail,
   forgotPassword,
   resetPassword,
+  resendVerification,
 } from '../controllers/authController.js'
 import { authenticateUser } from '../middleware/authMiddleware.js'
 const router = express.Router()
@@ -19,6 +20,7 @@ router.post('/logout', logout)
 router.post('/change-password', authenticateUser, changePassword)
 
 router.post('/verify', verifyEmail)
+router.post('/resend-verification', resendVerification)
 router.post('/forgot-password', forgotPassword)
 router.post('/reset-password', resetPassword)
 

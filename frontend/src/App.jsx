@@ -4,20 +4,21 @@ import AuthSuccess from './pages/AuthSuccess'
 import Button from './components/button/Button'
 import Spinner from './components/spinner/spinner'
 import Modal from './components/modal/Modal'
-import VerificationModalContent from './components/modal/VerificationModalContent'
-import Login from './pages/Login'
-import Registration from './pages/Registration'
+import VerificationModalContent from './pages/VerifyPage'
 import Header from './components/Header'
 import GenerationError from './components/GenerationError'
 import GenerateForm from './components/GenerateForm'
 import UserPanel from './components/userPanel/UserPanel'
 import MobileUserPanel from './components/userPanel/MobileUserPanel'
-import ForgotPassword from './components/modal/ForgotPassword'
-import ResetPassword from './pages/ResetPassword'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegistrationPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import VerifyPage from './pages/VerifyPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 
 import { downloadImage } from './utils/downloadImage'
 import { useGenerateImage } from './hooks/useGenerateImage'
-import { useAuth } from './hooks/useAuth'
+import { useAuth } from './context/AuthContext'
 import { useHistory } from './hooks/useHistory'
 import { ToastContainer } from 'react-toastify'
 
@@ -31,15 +32,10 @@ function App() {
     user,
     authType,
     setAuthType,
-    authOpen,
     setAuthOpen,
-    formValues,
     setFormValues,
-    formErrors,
     setFormErrors,
-    selectedCountryCode,
     setSelectedCountryCode,
-    handleAuthSubmit,
     handleLogout,
     showVerification,
     setShowVerification,
@@ -47,20 +43,6 @@ function App() {
     handleVerificationSubmit,
     verifying,
     verificationError,
-    registering,
-    showForgotPassword,
-    setShowForgotPassword,
-    handleForgotPassword,
-    forgotLoading,
-    forgotError,
-    showResetModal,
-    setShowResetModal,
-    forgotEmail,
-    handleResetPassword,
-    resetting,
-    resetError,
-    resetStep,
-    setResetStep,
   } = useAuth()
 
   const {
@@ -88,11 +70,6 @@ function App() {
     setHistory,
   })
 
-  console.log('authOpen:', authOpen)
-  console.log('showForgotPassword:', showForgotPassword)
-  console.log('showResetModal:', showResetModal)
-  console.log('resetStep:', resetStep)
-
   const renderResult = () => {
     if (loading) return <Spinner />
     if (generationError) {
@@ -106,21 +83,21 @@ function App() {
 
   return (
     <>
+      <Header
+        user={user}
+        authType={authType}
+        setAuthType={setAuthType}
+        setAuthOpen={setAuthOpen}
+        setFormValues={setFormValues}
+        setFormErrors={setFormErrors}
+        setSelectedCountryCode={setSelectedCountryCode}
+        setMobilePanelOpen={setMobilePanelOpen}
+      />
       <Routes>
         <Route
           path="/"
           element={
             <div>
-              <Header
-                user={user}
-                authType={authType}
-                setAuthType={setAuthType}
-                setAuthOpen={setAuthOpen}
-                setFormValues={setFormValues}
-                setFormErrors={setFormErrors}
-                setSelectedCountryCode={setSelectedCountryCode}
-                setMobilePanelOpen={setMobilePanelOpen}
-              />
               {user && (
                 <MobileUserPanel
                   open={mobilePanelOpen}
@@ -137,72 +114,6 @@ function App() {
                     <h1 className="text-4xl font-bold text-center mb-4">AI Image Generator</h1>
                     <p className="text-center mb-8 text-gray-600">Turn words into art</p>
 
-                    {showForgotPassword && resetStep === 'request' && (
-                      <Modal onClose={() => setShowForgotPassword(false)}>
-                        <ForgotPassword
-                          onSubmit={handleForgotPassword}
-                          isLoading={forgotLoading}
-                          error={forgotError}
-                          onBackToLogin={() => {
-                            setShowForgotPassword(false)
-                            setAuthOpen(true)
-                            setAuthType('login')
-                          }}
-                        />
-                      </Modal>
-                    )}
-
-                    {showResetModal && resetStep === 'verify' && (
-                      <Modal onClose={() => setShowResetModal(false)}>
-                        <ResetPassword
-                          email={forgotEmail}
-                          onSubmit={handleResetPassword}
-                          isLoading={resetting}
-                          error={resetError}
-                        />
-                      </Modal>
-                    )}
-
-                    {authOpen && !showForgotPassword && !showResetModal && (
-                      <Modal
-                        onClose={() => {
-                          setAuthOpen(false)
-                          setAuthType('login')
-                        }}
-                      >
-                        {authType === 'login' ? (
-                          <Login
-                            formValues={formValues}
-                            setFormValues={setFormValues}
-                            formErrors={formErrors}
-                            onSubmit={handleAuthSubmit}
-                            switchAuthType={() => {
-                              setAuthType('register')
-                              setFormErrors({})
-                            }}
-                            setAuthOpen={setAuthOpen}
-                            setShowForgotPassword={setShowForgotPassword}
-                            setResetStep={setResetStep}
-                            setShowResetModal={setShowResetModal}
-                          />
-                        ) : (
-                          <Registration
-                            formValues={formValues}
-                            setFormValues={setFormValues}
-                            formErrors={formErrors}
-                            selectedCountryCode={selectedCountryCode}
-                            setSelectedCountryCode={setSelectedCountryCode}
-                            onSubmit={handleAuthSubmit}
-                            switchAuthType={() => {
-                              setAuthType('login')
-                              setFormErrors({})
-                            }}
-                            loading={registering}
-                          />
-                        )}
-                      </Modal>
-                    )}
-
                     <GenerateForm
                       user={user}
                       handleGenerate={(e) => {
@@ -216,10 +127,8 @@ function App() {
                       promptError={promptError}
                       handleHistoryClick={handleHistoryClick}
                       renderResult={renderResult}
-                      setAuthOpen={setAuthOpen}
                       history={history}
                       downloadImage={downloadImage}
-                      setAuthType={setAuthType}
                     />
 
                     {modalOpen && selectedImage && (
@@ -265,6 +174,11 @@ function App() {
           }
         />
         <Route path="/auth-success" element={<AuthSuccess />} />
+        <Route path="/auth/login" element={<LoginPage />} />
+        <Route path="/auth/register" element={<RegisterPage />} />
+        <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/auth/verify" element={<VerifyPage />} />
+        <Route path="/auth/reset" element={<ResetPasswordPage />} />
       </Routes>
 
       <ToastContainer

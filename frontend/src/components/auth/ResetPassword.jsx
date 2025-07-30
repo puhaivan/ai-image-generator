@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import Input from '../components/input/Input'
-import Button from '../components/button/Button'
-import Spinner from '../components/spinner/spinner'
-import { validate } from '../utils/formValidation'
+import Input from '../input/Input'
+import Button from '../button/Button'
+import Spinner from '../spinner/spinner'
+import { validate } from '../../utils/formValidation'
 
-function ResetPassword({ email, onSubmit, isLoading, error }) {
+function ResetPassword({ email, onSubmit, isLoading, error, resendCode }) {
   const [code, setCode] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [formErrors, setFormErrors] = useState({})
@@ -53,9 +53,15 @@ function ResetPassword({ email, onSubmit, isLoading, error }) {
       </p>
 
       {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-
+      <button
+        type="button"
+        onClick={resendCode}
+        className="text-sm text-blue-600 hover:underline mt-2 cursor-pointer"
+      >
+        {isLoading ? <Spinner size={3} message="" /> : 'Resend Code'}
+      </button>
       <Button type="submit" fullWidth disabled={isLoading}>
-        {isLoading ? <Spinner size={3} message="Resetting..." /> : 'Reset Password'}
+        {isLoading ? <Spinner size={3} message="" /> : 'Reset Password'}
       </Button>
     </form>
   )

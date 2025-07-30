@@ -1,6 +1,7 @@
 import Input from './input/Input'
 import Button from './button/Button'
 import History from './history/History'
+import { useNavigate } from 'react-router-dom'
 
 function GenerateForm({
   user,
@@ -13,11 +14,11 @@ function GenerateForm({
   imageUrl,
   downloadImage,
   handleHistoryClick,
-  setAuthOpen,
   generationError,
   history,
-  setAuthType,
 }) {
+  const navigate = useNavigate() // INIT NAVIGATION
+
   if (!user) {
     return (
       <div className="max-w-lg mx-auto mt-10 p-6 bg-white shadow-md rounded-lg text-center">
@@ -27,8 +28,7 @@ function GenerateForm({
         </p>
         <Button
           onClick={() => {
-            setAuthOpen(true)
-            setAuthType('login')
+            navigate('/auth/login') // REDIRECT TO LOGIN PAGE
           }}
         >
           Login to Start
