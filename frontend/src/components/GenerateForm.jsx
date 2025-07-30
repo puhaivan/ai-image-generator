@@ -17,7 +17,7 @@ function GenerateForm({
   generationError,
   history,
 }) {
-  const navigate = useNavigate() // INIT NAVIGATION
+  const navigate = useNavigate()
 
   if (!user) {
     return (
@@ -28,7 +28,7 @@ function GenerateForm({
         </p>
         <Button
           onClick={() => {
-            navigate('/auth/login') // REDIRECT TO LOGIN PAGE
+            navigate('/auth/login')
           }}
         >
           Login to Start
@@ -49,12 +49,6 @@ function GenerateForm({
             error={promptError}
             disabled={loading}
           />
-
-          {promptError && (
-            <span className="ml-2 block text-red-500 text-xs font-normal align-middle">
-              {promptError}
-            </span>
-          )}
           <Button type="submit" disabled={loading}>
             {loading ? 'Generating...' : 'Generate Image'}
           </Button>

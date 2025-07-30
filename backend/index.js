@@ -58,7 +58,6 @@ app.use(
 app.use(passport.initialize())
 app.use(passport.session())
 
-// Routes
 app.use('/api/auth', authRoutes)
 app.use('/auth', authGoogleRoutes)
 app.use('/api/images', authenticateUser, imageRoutes)

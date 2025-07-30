@@ -47,7 +47,7 @@ function ForgotPassword({ onSubmit, isLoading, error, onBackToLogin }) {
       <button
         type="button"
         onClick={onBackToLogin}
-        className="text-sm text-blue-600 underline block mx-auto"
+        className="text-sm text-blue-600 underline cursor-pointer block mx-auto"
       >
         Back to Login
       </button>

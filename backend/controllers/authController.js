@@ -33,12 +33,16 @@ export const getMe = async (req, res) => {
     }
 
     const token = req.cookies.token
-    if (!token) return res.status(401).json({ error: 'Not authenticated' })
+    if (!token) {
+      return res.status(401).end()
+    }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
     const user = await User.findById(decoded.id)
 
-    if (!user) return res.status(404).json({ error: 'User not found' })
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    }
 
     if (!user.isVerified) {
       return res.status(403).json({
@@ -48,7 +52,7 @@ export const getMe = async (req, res) => {
       })
     }
 
-    res.json({
+    return res.json({
       email: user.email,
       phoneNumber: user.phoneNumber,
       firstName: user.firstName,

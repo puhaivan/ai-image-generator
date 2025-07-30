@@ -1,7 +1,8 @@
-import Login from '../components/auth/Login'
 import { useAuth } from '../context/AuthContext'
-import CloseButton from '../components/button/closeButton'
 import { useNavigate } from 'react-router-dom'
+
+import CloseButton from '../components/button/closeButton'
+import LoginContent from '../components/auth/LoginContent'
 
 function LoginPage() {
   const navigate = useNavigate()
@@ -19,7 +20,7 @@ function LoginPage() {
       <div className="relative w-full max-w-md bg-white rounded-xl shadow-md p-6">
         <CloseButton onClick={() => navigate('/')} />
         <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
-        <Login
+        <LoginContent
           formValues={formValues}
           setFormValues={setFormValues}
           formErrors={formErrors}

@@ -6,7 +6,6 @@ export const isValidPrompt = (text, setPromptError) => {
     return false
   }
   if (trimmed.length <= 3) {
-    console.log(trimmed.length)
     setPromptError('⚠️ Please enter a valid prompt (too short)')
     return false
   }

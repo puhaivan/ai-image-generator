@@ -4,7 +4,7 @@ import AuthSuccess from './pages/AuthSuccess'
 import Button from './components/button/Button'
 import Spinner from './components/spinner/spinner'
 import Modal from './components/modal/Modal'
-import VerificationModalContent from './pages/VerifyPage'
+import VerificationModalContent from './pages/EmailVerifyPage'
 import Header from './components/Header'
 import GenerationError from './components/GenerationError'
 import GenerateForm from './components/GenerateForm'
@@ -13,7 +13,7 @@ import MobileUserPanel from './components/userPanel/MobileUserPanel'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegistrationPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
-import VerifyPage from './pages/VerifyPage'
+import EmailVerifyPage from './pages/EmailVerifyPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 
 import { downloadImage } from './utils/downloadImage'
@@ -37,11 +37,11 @@ function App() {
     setFormErrors,
     setSelectedCountryCode,
     handleLogout,
-    showVerification,
-    setShowVerification,
-    pendingEmail,
+    showVerificationStep,
+    setShowVerificationStep,
+    unverifiedEmail,
     handleVerificationSubmit,
-    verifying,
+    isVerifyingCode,
     verificationError,
   } = useAuth()
 
@@ -177,7 +177,7 @@ function App() {
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/auth/register" element={<RegisterPage />} />
         <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/auth/verify" element={<VerifyPage />} />
+        <Route path="/auth/verify" element={<EmailVerifyPage />} />
         <Route path="/auth/reset" element={<ResetPasswordPage />} />
       </Routes>
 
@@ -203,12 +203,12 @@ function App() {
         progressClassName="bg-blue-500"
       />
 
-      {showVerification && (
-        <Modal onClose={() => setShowVerification(false)}>
+      {showVerificationStep && (
+        <Modal onClose={() => setShowVerificationStep(false)}>
           <VerificationModalContent
-            email={pendingEmail}
+            email={unverifiedEmail}
             onVerify={handleVerificationSubmit}
-            isLoading={verifying}
+            isLoading={isVerifyingCode}
             verificationError={verificationError}
           />
         </Modal>
