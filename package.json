@@ -13,6 +13,6 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "lint:fix": "eslint . --fix"
   }
 }

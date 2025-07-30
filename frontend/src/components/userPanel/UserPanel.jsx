@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Button from '../button/Button'
 import userPanelIcon from '/images/user-panel-icon.svg'
-import ChangePassword from '../../pages/ChangePassword'
+import ChangePassword from '../modal/ChangePasswordModal'
 import Modal from '../modal/Modal'
 
 const UserPanel = ({ user, handleLogout }) => {

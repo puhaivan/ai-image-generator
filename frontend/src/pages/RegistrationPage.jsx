@@ -1,7 +1,8 @@
-import Registration from '../components/auth/Registration'
-import { useAuth } from '../context/AuthContext'
-import CloseButton from '../components/button/closeButton'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+
+import RegistrationContent from '../components/auth/RegistrationContent'
+import CloseButton from '../components/button/closeButton'
 
 function RegisterPage() {
   const navigate = useNavigate()
@@ -12,7 +13,7 @@ function RegisterPage() {
     selectedCountryCode,
     setSelectedCountryCode,
     handleAuthSubmit,
-    registering,
+    isRegistering,
   } = useAuth()
 
   return (
@@ -21,14 +22,14 @@ function RegisterPage() {
         <CloseButton onClick={() => navigate('/')} />
         <h2 className="text-2xl font-bold mb-4 text-center">Register</h2>
 
-        <Registration
+        <RegistrationContent
           formValues={formValues}
           setFormValues={setFormValues}
           formErrors={formErrors}
           selectedCountryCode={selectedCountryCode}
           setSelectedCountryCode={setSelectedCountryCode}
           onSubmit={handleAuthSubmit}
-          loading={registering}
+          loading={isRegistering}
         />
       </div>
     </div>

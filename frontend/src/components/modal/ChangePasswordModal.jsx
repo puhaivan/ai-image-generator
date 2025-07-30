@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import Input from '../components/input/Input'
-import Button from '../components/button/Button'
+import Input from '../input/Input'
+import Button from '../button/Button'
 import { toast } from 'react-toastify'
-import { API_BASE_URL } from '../utils/constants'
-import { validate } from '../utils/formValidation'
+import { API_BASE_URL } from '../../utils/constants'
+import { validate } from '../../utils/formValidation'
 
 function ChangePassword({ onClose }) {
   const [currentPassword, setCurrentPassword] = useState('')

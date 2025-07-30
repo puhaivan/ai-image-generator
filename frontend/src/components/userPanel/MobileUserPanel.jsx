@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Button from '../button/Button'
 import CloseButton from '../button/closeButton'
 import userPanelIcon from '/images/user-panel-icon.svg'
-import ChangePassword from '../../pages/ChangePassword'
+import ChangePassword from '../modal/ChangePasswordModal'
 import Modal from '../modal/Modal'
 
 const MobileUserPanel = ({ open, setOpen, user, handleLogout }) => {

@@ -70,7 +70,7 @@ function Login({ formValues, setFormValues, formErrors, onSubmit }) {
 
       <button
         type="button"
-        className="text-sm text-blue-600 underline mt-2"
+        className="text-sm text-blue-600 cursor-pointer underline mt-2"
         onClick={() => navigate('/auth/forgot-password')}
       >
         Forgot password?
