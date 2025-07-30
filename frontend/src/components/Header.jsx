@@ -1,42 +1,36 @@
+import { useLocation, useNavigate } from 'react-router-dom'
 import Button from './button/Button'
 import hamburgerMenuIcon from '/images/hamburger-menu-icon.svg'
 
-const Header = ({
-  user,
-  authType,
-  setAuthType,
-  setAuthOpen,
-  setFormValues,
-  setFormErrors,
-  setSelectedCountryCode,
-  setMobilePanelOpen,
-}) => {
-  const handleLoginClick = () => {
-    setAuthType(authType === 'login' ? 'login' : 'register')
-    setAuthOpen(true)
-    setFormValues({
-      email: { value: '', required: true },
-      phoneNumber: { value: '', required: true },
-      password: { value: '', required: true },
-      firstName: { value: '', required: true },
-      lastName: { value: '', required: true },
-    })
-    setFormErrors({})
-    setSelectedCountryCode('+1')
-  }
-  return (
-    <header className="relative bg-gradient-to-r from-blue-100 to-purple-100 shadow-md rounded-xl px-6 py-6 mb-8 mr-4 ml-4 mt-4">
-      <div className="flex items-center justify-between">
-        {user && (
-          <button
-            onClick={() => setMobilePanelOpen(true)}
-            className="lg:hidden p-2 mr-2 rounded-md text-white hover:text-blue-700 cursor-pointer transition"
-          >
-            <img src={hamburgerMenuIcon} alt="Hamburger Menu" className="w-6 h-6" />
-          </button>
-        )}
+const Header = ({ user, setMobilePanelOpen }) => {
+  const navigate = useNavigate()
+  const location = useLocation()
 
-        <div className="text-center mx-auto">
+  const handleLoginClick = () => {
+    navigate('/auth/login')
+  }
+
+  return (
+    <header className="relative bg-gradient-to-r from-blue-100 to-purple-100 shadow-md rounded-xl px-6 py-6 mb-8 mx-4 mt-4">
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3 lg:gap-4 lg:order-1">
+          {user && (
+            <button
+              onClick={() => setMobilePanelOpen(true)}
+              className="lg:hidden p-2 rounded-md text-white hover:text-blue-700 cursor-pointer transition"
+            >
+              <img src={hamburgerMenuIcon} alt="Menu" className="w-6 h-6" />
+            </button>
+          )}
+
+          <img
+            src="/images/logo.png"
+            alt="Promptify AIG Logo"
+            className="w-50 h-15 rounded-full object-cover cursor-pointer hover:scale-105 transition-transform duration-200"
+            onClick={() => navigate('/')}
+          />
+        </div>
+        <div className="text-center lg:order-2 flex-1">
           <h1 className="text-3xl font-extrabold text-gray-800 drop-shadow-sm">
             Start creating your images
           </h1>
@@ -45,12 +39,8 @@ const Header = ({
           </p>
         </div>
 
-        <div className="absolute hidden lg:block right-4 top-1/2 -translate-y-1/2">
-          {!user && (
-            <Button onClick={handleLoginClick}>
-              {authType === 'login' ? 'Login' : 'Register'}
-            </Button>
-          )}
+        <div className="hidden lg:block lg:order-3">
+          {!user && location.pathname === '/' && <Button onClick={handleLoginClick}>Login</Button>}
         </div>
       </div>
     </header>

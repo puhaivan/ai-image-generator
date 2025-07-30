@@ -41,7 +41,7 @@ function ForgotPassword({ onSubmit, isLoading, error, onBackToLogin }) {
       {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
       <Button type="submit" fullWidth disabled={isLoading}>
-        {isLoading ? <Spinner size={3} message="Sending..." /> : 'Send Reset Code'}
+        {isLoading ? <Spinner size={3} message="" /> : 'Send Reset Code'}
       </Button>
 
       <button

@@ -1,24 +1,16 @@
-import Input from '../components/input/Input'
-import Button from '../components/button/Button'
-import { API_BASE_URL } from '../utils/constants'
+import { useNavigate } from 'react-router-dom'
+import Input from '../input/Input'
+import Button from '../button/Button'
+import { API_BASE_URL } from '../../utils/constants'
 import { useEffect } from 'react'
 import { toast } from 'react-toastify'
 
-function Login({
-  formValues,
-  setFormValues,
-  formErrors,
-  onSubmit,
-  switchAuthType,
-  setShowForgotPassword,
-  setAuthOpen,
-  setResetStep,
-  setShowResetModal,
-}) {
+function Login({ formValues, setFormValues, formErrors, onSubmit }) {
+  const navigate = useNavigate()
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const error = params.get('error')
-
     if (error === 'auth_method') {
       toast.error('❌ This email is registered using a different login method')
     }
@@ -75,19 +67,15 @@ function Login({
           </span>
         )}
       </div>
+
       <button
         type="button"
         className="text-sm text-blue-600 underline mt-2"
-        onClick={() => {
-          console.log('Clicked Forgot Password')
-          setResetStep('request')
-          setAuthOpen(false)
-          setShowResetModal(false)
-          setShowForgotPassword(true)
-        }}
+        onClick={() => navigate('/auth/forgot-password')}
       >
         Forgot password?
       </button>
+
       <Button type="submit" fullWidth>
         Login
       </Button>
@@ -113,7 +101,7 @@ function Login({
       <button
         type="button"
         className="text-sm text-blue-600 cursor-pointer underline mt-2"
-        onClick={switchAuthType}
+        onClick={() => navigate('/auth/register')}
       >
         Don’t have an account? Register
       </button>

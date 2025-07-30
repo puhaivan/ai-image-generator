@@ -282,11 +282,39 @@ export const verifyEmail = async (req, res) => {
   res.json({ message: 'Email verified successfully', token })
 }
 
+export const resendVerification = async (req, res) => {
+  try {
+    const { email } = req.body
+    const user = await User.findOne({ email })
+
+    if (!user) return res.status(404).json({ error: 'User not found' })
+    if (user.isVerified) return res.status(400).json({ error: 'User already verified' })
+
+    user.verificationCode = Math.floor(100000 + Math.random() * 900000).toString()
+    await user.save()
+
+    await sendEmail(
+      email,
+      'Verify your email',
+      `Hello ${user.firstName}, your new verification code is: ${user.verificationCode}`
+    )
+
+    res.json({ message: 'Verification code resent successfully' })
+  } catch (err) {
+    console.error('❌ Resend verification error:', err.message)
+    res.status(500).json({ error: 'Server error while resending verification code' })
+  }
+}
+
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body
     const user = await User.findOne({ email })
+
     if (!user) return res.status(404).json({ error: 'No user with that email found' })
+    if (user.loginMethod === 'google') {
+      return res.status(400).json({ error: 'Google users cannot change password' })
+    }
 
     const code = Math.floor(100000 + Math.random() * 900000).toString()
     user.resetCode = code

@@ -1,7 +1,8 @@
-import Input from '../components/input/Input'
-import Button from '../components/button/Button'
-import Spinner from '../components/spinner/spinner'
-import { COUNTRY_CODES } from '../utils/constants'
+import { useNavigate } from 'react-router-dom'
+import Input from '../input/Input'
+import Button from '../button/Button'
+import Spinner from '../spinner/spinner'
+import { COUNTRY_CODES } from '../../utils/constants'
 
 function Registration({
   formValues,
@@ -10,9 +11,10 @@ function Registration({
   selectedCountryCode,
   setSelectedCountryCode,
   onSubmit,
-  switchAuthType,
   loading,
 }) {
+  const navigate = useNavigate()
+
   return (
     <form onSubmit={onSubmit} noValidate className="space-y-4">
       {formErrors.general && (
@@ -147,8 +149,8 @@ function Registration({
 
       <button
         type="button"
-        className="text-sm text-blue-600 underline mt-2"
-        onClick={switchAuthType}
+        className="text-sm text-blue-600 cursor-pointer underline mt-2"
+        onClick={() => navigate('/auth/login')}
       >
         Already have an account? Login
       </button>
