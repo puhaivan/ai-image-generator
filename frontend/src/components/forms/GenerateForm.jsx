@@ -1,6 +1,6 @@
-import Input from './input/Input'
-import Button from './button/Button'
-import History from './history/History'
+import Input from '../input/Input'
+import Button from '../button/Button'
+import History from '../history/History'
 import { useNavigate } from 'react-router-dom'
 
 function GenerateForm({

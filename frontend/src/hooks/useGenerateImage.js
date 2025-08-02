@@ -1,5 +1,5 @@
 import { isValidPrompt } from '../utils/validation'
-const VITE_API_URL = import.meta.env.VITE_API_URL
+import { API_BASE_URL } from '../utils/constants'
 
 export const useGenerateImage = ({
   setImageUrl,
@@ -14,7 +14,7 @@ export const useGenerateImage = ({
     setLoading(true)
 
     try {
-      const res = await fetch(`${VITE_API_URL}/generate`, {
+      const res = await fetch(`${API_BASE_URL}/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
