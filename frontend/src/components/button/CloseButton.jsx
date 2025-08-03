@@ -1,4 +1,4 @@
-function CloseButton({ onClick }) {
+function ClosingButton({ onClick }) {
   return (
     <button
       onClick={onClick}
@@ -10,4 +10,4 @@ function CloseButton({ onClick }) {
   )
 }
 
-export default CloseButton
+export default ClosingButton

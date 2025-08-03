@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Button from '../button/Button'
-import CloseButton from '../button/closeButton'
+import ClosingButton from '../button/CloseButton'
 import userPanelIcon from '/images/user-panel-icon.svg'
 import ChangePassword from '../modal/ChangePasswordModal'
 import Modal from '../modal/Modal'
@@ -30,7 +30,7 @@ const MobileUserPanel = ({ open, setOpen, user, handleLogout }) => {
             <img src={userPanelIcon} className="w-4 h-4" alt="Trash Icon" />
             <span>User Panel</span>
           </h2>
-          <CloseButton className="w-5 h-5 text-gray-700" onClick={() => setOpen(false)} />
+          <ClosingButton className="w-5 h-5 text-gray-700" onClick={() => setOpen(false)} />
         </div>
 
         <div className="space-y-4">

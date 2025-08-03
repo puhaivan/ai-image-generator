@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 import RegistrationContent from '../components/auth/RegistrationContent'
-import CloseButton from '../components/button/closeButton'
+import ClosingButton from '../components/button/CloseButton'
 
 function RegisterPage() {
   const navigate = useNavigate()
@@ -19,7 +19,7 @@ function RegisterPage() {
   return (
     <div className="flex justify-center items-center bg-gray-100 p-6 min-h-[calc(100vh-96px)]">
       <div className="relative w-full max-w-md bg-white p-6 rounded-lg shadow-lg">
-        <CloseButton onClick={() => navigate('/')} />
+        <ClosingButton onClick={() => navigate('/')} />
         <h2 className="text-2xl font-bold mb-4 text-center">Register</h2>
 
         <RegistrationContent
