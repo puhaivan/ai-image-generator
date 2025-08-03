@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken'
 import User from '../models/User.js'
-import bcrypt from 'bcrypt'
 import sendEmail from '../utils/sendEmail.js'
 
 const isProduction = process.env.NODE_ENV === 'production'
@@ -347,14 +346,14 @@ export const resetPassword = async (req, res) => {
       return res.status(400).json({ error: 'Invalid or expired reset code' })
     }
 
-    const isSamePassword = await bcrypt.compare(newPassword, user.password)
+    const isSamePassword = await user.comparePassword(newPassword)
     if (isSamePassword) {
       return res.status(400).json({
         error: 'New password cannot be the same as your old password',
       })
     }
 
-    user.password = await bcrypt.hash(newPassword, 10)
+    user.password = newPassword
     user.resetCode = undefined
     user.resetCodeExpires = undefined
 
