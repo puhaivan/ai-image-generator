@@ -1,17 +1,16 @@
 import express from 'express'
-import fetch from 'node-fetch'
 
 const router = express.Router()
 
-router.get('/:filename', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const { filename } = req.params
-    const fileUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${filename}`
+    const fileUrl = req.query.url
+    if (!fileUrl) return res.status(400).json({ error: 'Missing url' })
 
     const response = await fetch(fileUrl)
-    if (!response.ok) throw new Error('File not found on S3')
+    if (!response.ok) throw new Error('File not found')
 
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+    res.setHeader('Content-Disposition', `attachment; filename="${Date.now()}.jpg"`)
     res.setHeader(
       'Content-Type',
       response.headers.get('content-type') || 'application/octet-stream'
@@ -21,7 +20,7 @@ router.get('/:filename', async (req, res) => {
     res.send(Buffer.from(buffer))
   } catch (err) {
     console.error('❌ File download failed:', err)
-    res.status(404).json({ error: 'File not found' })
+    res.status(500).json({ error: 'Download failed' })
   }
 })
 
