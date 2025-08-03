@@ -13,7 +13,7 @@ const Header = ({ user, setMobilePanelOpen }) => {
   return (
     <header className="relative bg-gradient-to-r from-blue-100 to-purple-100 shadow-md rounded-xl px-6 py-6 mb-8 mx-4 mt-4">
       <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3 lg:gap-4 lg:order-1">
+        <div className="flex items-center gap-3 lg:gap-4 lg:order-1 lg:w-48">
           {user && (
             <button
               onClick={() => setMobilePanelOpen(true)}
@@ -39,7 +39,7 @@ const Header = ({ user, setMobilePanelOpen }) => {
           </p>
         </div>
 
-        <div className="hidden lg:block lg:order-3">
+        <div className="hidden lg:block lg:order-3 lg:w-48">
           {!user && location.pathname === '/' && <Button onClick={handleLoginClick}>Login</Button>}
         </div>
       </div>

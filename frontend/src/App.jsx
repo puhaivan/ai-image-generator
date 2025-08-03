@@ -4,7 +4,6 @@ import AuthSuccess from './pages/AuthSuccess'
 import Button from './components/button/Button'
 import Spinner from './components/spinner/spinner'
 import Modal from './components/modal/Modal'
-import VerificationModalContent from './pages/EmailVerifyPage'
 import Header from './components/Header'
 import GenerationError from './components/forms/GenerationError'
 import GenerateForm from './components/forms/GenerateForm'
@@ -16,6 +15,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import EmailVerifyPage from './pages/EmailVerifyPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import Footer from './components/Footer'
+import Interactive3D from './components/Interactive3D'
 
 import { downloadImage } from './utils/downloadImage'
 import { useGenerateImage } from './hooks/useGenerateImage'
@@ -197,6 +197,7 @@ function App() {
         bodyClassName="text-sm"
         progressClassName="bg-blue-500"
       />
+      <Interactive3D />
       <Footer />
     </>
   )
