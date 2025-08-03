@@ -24,6 +24,7 @@ import authRoutes from './routes/authRoutes.js'
 import imageRoutes from './routes/imageRoutes.js'
 import historyRoutes from './routes/historyRoutes.js'
 import contactRoutes from './routes/contactRoutes.js'
+import downloadRouter from './routes/download.js'
 
 import { authenticateUser } from './middleware/authMiddleware.js'
 import { uploadImageToS3 } from './service/s3.js'
@@ -80,6 +81,7 @@ app.use('/auth', authGoogleRoutes)
 app.use('/api/images', authenticateUser, imageRoutes)
 app.use('/api/history', authenticateUser, historyRoutes)
 app.use('/api/contact', contactRoutes)
+app.use('/api/download', downloadRouter)
 
 mongoose
   .connect(process.env.MONGO_URI, {
