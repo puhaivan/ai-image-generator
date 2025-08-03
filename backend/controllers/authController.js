@@ -339,7 +339,9 @@ export const resetPassword = async (req, res) => {
     const { email, code, newPassword } = req.body
 
     const user = await User.findOne({ email })
-    if (!user) return res.status(404).json({ error: 'User not found' })
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    }
 
     if (user.resetCode !== code || !user.resetCodeExpires || user.resetCodeExpires < Date.now()) {
       return res.status(400).json({ error: 'Invalid or expired reset code' })
@@ -347,20 +349,18 @@ export const resetPassword = async (req, res) => {
 
     const isSamePassword = await bcrypt.compare(newPassword, user.password)
     if (isSamePassword) {
-      return res
-        .status(400)
-        .json({ error: 'New password cannot be the same as the current password' })
+      return res.status(400).json({
+        error: 'New password cannot be the same as your old password',
+      })
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10)
-
-    user.password = hashedPassword
+    user.password = await bcrypt.hash(newPassword, 10)
     user.resetCode = undefined
     user.resetCodeExpires = undefined
 
     await user.save()
 
-    res.json({ message: 'Password has been reset successfully' })
+    res.json({ message: 'Password has been reset successfully. You can now log in.' })
   } catch (err) {
     console.error('❌ Reset Password error:', err.message)
     res.status(500).json({ error: 'Server error during password reset' })
