@@ -35,9 +35,17 @@ const PORT = process.env.PORT || 3001
 
 const API_URL = process.env.STABILITY_API_URL
 
+const allowedOrigins = ['http://localhost:5173', 'https://ai-image-generator-ten-jet.vercel.app']
+
 app.use(
   cors({
-    origin: 'http://localhost:5173',
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true)
+      } else {
+        callback(new Error('Not allowed by CORS'))
+      }
+    },
     credentials: true,
   })
 )
