@@ -158,7 +158,7 @@ export const register = async (req, res) => {
     res.cookie('token', token, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction ? 'strict' : 'lax',
+      sameSite: isProduction ? 'None' : 'Lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
 
@@ -220,7 +220,7 @@ export const login = async (req, res) => {
     res.cookie('token', token, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction ? 'strict' : 'lax',
+      sameSite: isProduction ? 'None' : 'Lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
 
@@ -279,7 +279,7 @@ export const verifyEmail = async (req, res) => {
   res.cookie('token', token, {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? 'strict' : 'lax',
+    sameSite: isProduction ? 'None' : 'Lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   })
 

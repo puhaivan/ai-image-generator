@@ -3,6 +3,7 @@ import passport from 'passport'
 import jwt from 'jsonwebtoken'
 
 const router = express.Router()
+const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173'
 
 router.get(
   '/google',
@@ -25,17 +26,16 @@ router.get(
 
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+      secure: isProduction,
+      sameSite: isProduction ? 'None' : 'Lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
-
-    res.redirect('http://localhost:5173')
+    res.redirect(frontendURL)
   }
 )
 
 router.get('/google/failure', (req, res) => {
-  res.redirect('http://localhost:5173/?authOpen=login&error=auth_method')
+  res.redirect(`${frontendURL}/?authOpen=login&error=auth_method`)
 })
 
 export default router
