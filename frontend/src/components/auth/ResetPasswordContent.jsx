@@ -31,13 +31,13 @@ function ResetPassword({ email, onSubmit, isLoading, error, resendCode }) {
       <p className="text-sm text-gray-500 text-center">
         We sent a 6-digit code to <strong>{email}</strong>. Enter it along with your new password.
       </p>
-
       <Input
         type="text"
         placeholder="Reset code"
         value={code}
         onChange={(e) => setCode(e.target.value)}
         error={formErrors.code?.message}
+        autoComplete="one-time-code"
       />
 
       <Input
@@ -46,12 +46,11 @@ function ResetPassword({ email, onSubmit, isLoading, error, resendCode }) {
         value={newPassword}
         onChange={(e) => setNewPassword(e.target.value)}
         error={formErrors.newPassword?.message}
+        autoComplete="new-password"
       />
-
       <p className="text-xs text-gray-500 mt-[-8px]">
         Must be at least 6 characters and include a letter and a number
       </p>
-
       {error && <p className="text-red-500 text-sm text-center">{error}</p>}
       <button
         type="button"

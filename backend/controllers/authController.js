@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 import User from '../models/User.js'
-import crypto from 'crypto'
+import bcrypt from 'bcrypt'
 import sendEmail from '../utils/sendEmail.js'
 
 const isProduction = process.env.NODE_ENV === 'production'
@@ -337,6 +337,7 @@ export const forgotPassword = async (req, res) => {
 export const resetPassword = async (req, res) => {
   try {
     const { email, code, newPassword } = req.body
+
     const user = await User.findOne({ email })
     if (!user) return res.status(404).json({ error: 'User not found' })
 
@@ -344,9 +345,19 @@ export const resetPassword = async (req, res) => {
       return res.status(400).json({ error: 'Invalid or expired reset code' })
     }
 
-    user.password = newPassword
+    const isSamePassword = await bcrypt.compare(newPassword, user.password)
+    if (isSamePassword) {
+      return res
+        .status(400)
+        .json({ error: 'New password cannot be the same as the current password' })
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
+
+    user.password = hashedPassword
     user.resetCode = undefined
     user.resetCodeExpires = undefined
+
     await user.save()
 
     res.json({ message: 'Password has been reset successfully' })
