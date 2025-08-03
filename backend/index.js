@@ -31,7 +31,8 @@ import Image from './models/Image.js'
 import User from './models/User.js'
 
 const app = express()
-const PORT = 3001
+const PORT = process.env.PORT || 3001
+
 const API_URL = process.env.STABILITY_API_URL
 
 app.use(
@@ -115,5 +116,5 @@ app.post('/generate', authenticateUser, async (req, res) => {
 })
 
 app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`)
+  console.log(`Server running on port ${PORT}`)
 })
