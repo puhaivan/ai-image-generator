@@ -1,24 +1,25 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+
+import { toast } from 'react-toastify'
+
 import { API_BASE_URL } from '../utils/constants'
 import { validate } from '../utils/formValidation'
-import { useSearchParams, useNavigate } from 'react-router-dom'
-import { toast } from 'react-toastify'
 
 export const useAuth = () => {
   const [user, setUser] = useState(null)
   const [formErrors, setFormErrors] = useState({})
   const [selectedCountryCode, setSelectedCountryCode] = useState('+1')
-  const [searchParams] = useSearchParams()
-  const [showVerification, setShowVerification] = useState(false)
-  const [pendingEmail, setPendingEmail] = useState('')
-  const [verifying, setVerifying] = useState(false)
+  const [showVerificationStep, setShowVerificationStep] = useState(false)
+  const [unverifiedEmail, setUnverifiedEmail] = useState('')
+  const [isVerifyingCode, setIsVerifyingCode] = useState(false)
   const [verificationError, setVerificationError] = useState(null)
-  const [registering, setRegistering] = useState(false)
-  const [forgotLoading, setForgotLoading] = useState(false)
-  const [forgotError, setForgotError] = useState(null)
+  const [isRegistering, setIsRegistering] = useState(false)
+  const [isRequestingResetCode, setIsRequestingResetCode] = useState(false)
+  const [resetRequestError, setResetRequestError] = useState(null)
   const [resetStep, setResetStep] = useState('request')
 
-  const [resetting, setResetting] = useState(false)
+  const [isResettingPassword, setIsResettingPassword] = useState(false)
   const [resetError, setResetError] = useState('')
 
   const navigate = useNavigate()
@@ -32,16 +33,14 @@ export const useAuth = () => {
   })
 
   useEffect(() => {
-    const localEmail = localStorage.getItem('pendingEmail')
+    const localEmail = localStorage.getItem('unverifiedEmail')
     const shouldVerify = localStorage.getItem('showVerification') === 'true'
 
     if (shouldVerify && localEmail) {
-      setPendingEmail(localEmail)
-      setShowVerification(true)
-    } else if (localEmail) {
-      setPendingEmail(localEmail)
+      setUnverifiedEmail(localEmail)
+      setShowVerificationStep(true)
     }
-  }, [searchParams])
+  }, [])
 
   useEffect(() => {
     checkAuth()
@@ -56,18 +55,25 @@ export const useAuth = () => {
       if (res.status === 403) {
         const data = await res.json()
         if (data.requiresVerification && data.email) {
-          setPendingEmail(data.email)
-          setShowVerification(true)
+          setUnverifiedEmail(data.email)
+          setShowVerificationStep(true)
         }
-        throw new Error('Email not verified')
+        return
       }
 
-      if (!res.ok) throw new Error('Not authenticated')
+      if (res.status === 401) {
+        setUser(null)
+        return
+      }
+
+      if (!res.ok) throw new Error('Failed to fetch user info')
 
       const data = await res.json()
       setUser(data)
     } catch (err) {
-      console.error('Auth check failed:', err.message)
+      if (err.message !== 'Email not verified') {
+        console.error('❌ Unexpected auth check error:', err.message)
+      }
       setUser(null)
     }
   }
@@ -83,8 +89,8 @@ export const useAuth = () => {
     const data = await res.json()
 
     if (res.status === 200 && data.requiresVerification) {
-      setPendingEmail(data.email)
-      setShowVerification(true)
+      setUnverifiedEmail(data.email)
+      setShowVerificationStep(true)
       return
     }
 
@@ -128,7 +134,7 @@ export const useAuth = () => {
       await handleLogin(payload)
     } else {
       try {
-        setRegistering(true)
+        setIsRegistering(true)
         const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -147,9 +153,9 @@ export const useAuth = () => {
         }
 
         toast.success('Registration successful, please verify your email')
-        setPendingEmail(payload.email)
-        setShowVerification(true)
-        localStorage.setItem('pendingEmail', payload.email)
+        setUnverifiedEmail(payload.email)
+        setShowVerificationStep(true)
+        localStorage.setItem('unverifiedEmail', payload.email)
         localStorage.setItem('showVerification', 'true')
         navigate('/auth/verify')
       } catch (err) {
@@ -159,31 +165,31 @@ export const useAuth = () => {
           general: 'Something went wrong. Please try again.',
         }))
       } finally {
-        setRegistering(false)
+        setIsRegistering(false)
       }
     }
   }
 
   const handleVerificationSubmit = async (code) => {
-    setVerifying(true)
+    setIsVerifyingCode(true)
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ email: pendingEmail, code }),
+        body: JSON.stringify({ email: unverifiedEmail, code }),
       })
 
       const data = await res.json()
 
       if (res.ok) {
         await loadUser()
-        setShowVerification(false)
-        setPendingEmail('')
+        setShowVerificationStep(false)
+        setUnverifiedEmail('')
         resetForm()
         toast.success('Email verified and logged in!')
         setVerificationError(null)
-        localStorage.removeItem('pendingEmail')
+        localStorage.removeItem('unverifiedEmail')
         localStorage.removeItem('showVerification')
         navigate('/')
       } else {
@@ -192,18 +198,18 @@ export const useAuth = () => {
     } catch (err) {
       toast.error('Verification failed:', err)
     } finally {
-      setVerifying(false)
+      setIsVerifyingCode(false)
     }
   }
 
   const handleResendVerificationCode = async () => {
-    setVerifying(true)
+    setIsVerifyingCode(true)
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/resend-verification`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ email: pendingEmail }),
+        body: JSON.stringify({ email: unverifiedEmail }),
       })
 
       const data = await res.json()
@@ -214,7 +220,7 @@ export const useAuth = () => {
     } catch (err) {
       toast.error('Verification failed:', err)
     } finally {
-      setVerifying(false)
+      setIsVerifyingCode(false)
     }
   }
 
@@ -251,8 +257,8 @@ export const useAuth = () => {
   }
 
   const handleForgotPassword = async (email) => {
-    setForgotLoading(true)
-    setForgotError(null)
+    setIsRequestingResetCode(true)
+    setResetRequestError(null)
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
@@ -262,23 +268,23 @@ export const useAuth = () => {
       })
 
       const data = await res.json()
-
       if (!res.ok) throw new Error(data.error || 'Failed to send reset code')
 
       toast.success('Reset code sent to your email')
-      setPendingEmail(email)
-      localStorage.setItem('pendingEmail', email)
-      console.log('Navigating to /auth/reset')
-      navigate('/auth/reset')
+
+      setUnverifiedEmail(email)
+      localStorage.setItem('unverifiedEmail', email)
+
+      setTimeout(() => navigate('/auth/reset'), 100)
     } catch (err) {
-      setForgotError(err.message)
+      setResetRequestError(err.message)
     } finally {
-      setForgotLoading(false)
+      setIsRequestingResetCode(false)
     }
   }
 
   const handleResetPassword = async ({ email, code, newPassword }) => {
-    setResetting(true)
+    setIsResettingPassword(true)
     setResetError('')
 
     try {
@@ -290,30 +296,26 @@ export const useAuth = () => {
 
       const data = await res.json()
 
-      if (res.ok) {
-        toast.success('Password reset successful. You can now log in.')
-        localStorage.removeItem('pendingEmail')
-        navigate('/auth/login')
-      } else if (res.status === 400) {
-        setResetError(data.error || 'New password cannot be the same as your old password')
-      } else {
-        setResetError(data.error || 'Failed to reset password. Please try again.')
-      }
+      if (!res.ok) throw new Error(data.error || 'Failed to reset password')
+
+      toast.success('Password reset successful. You can now log in.')
+      localStorage.removeItem('unverifiedEmail')
+      navigate('/auth/login')
     } catch (err) {
       setResetError(err.message)
     } finally {
-      setResetting(false)
+      setIsResettingPassword(false)
     }
   }
 
   const handleResendResetCode = async () => {
-    setResetting(true)
+    setIsResettingPassword(true)
     setResetError('')
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: pendingEmail }),
+        body: JSON.stringify({ email: unverifiedEmail }),
       })
 
       const data = await res.json()
@@ -324,7 +326,7 @@ export const useAuth = () => {
     } catch (err) {
       setResetError(err.message)
     } finally {
-      setResetting(false)
+      setIsResettingPassword(false)
     }
   }
 
@@ -339,18 +341,18 @@ export const useAuth = () => {
     setSelectedCountryCode,
     handleAuthSubmit,
     handleLogout,
-    pendingEmail,
-    showVerification,
-    setShowVerification,
+    unverifiedEmail,
+    showVerificationStep,
+    setShowVerificationStep,
     handleVerificationSubmit,
-    verifying,
+    isVerifyingCode,
     verificationError,
-    registering,
+    isRegistering,
     handleForgotPassword,
-    forgotLoading,
-    forgotError,
+    isRequestingResetCode,
+    resetRequestError,
     handleResetPassword,
-    resetting,
+    isResettingPassword,
     resetError,
     setResetStep,
     resetStep,
