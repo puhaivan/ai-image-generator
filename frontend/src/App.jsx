@@ -49,6 +49,7 @@ function App() {
     setModalOpen,
     handleHistoryClick,
     handleDelete,
+    deleting,
   } = useHistory(user)
 
   const [prompt, setPrompt] = useState('')
@@ -155,10 +156,17 @@ function App() {
                               handleDelete(selectedImage._id)
                             }}
                             className="mt-2 w-full"
+                            disabled={deleting}
                           >
                             <span className="inline-flex justify-center items-center gap-2 w-full">
-                              Delete
-                              <img src={trashIcon} className="w-4 h-4" alt="Trash Icon" />
+                              {deleting ? (
+                                <Spinner size="sm" />
+                              ) : (
+                                <>
+                                  Delete
+                                  <img src={trashIcon} className="w-4 h-4" alt="Trash Icon" />
+                                </>
+                              )}
                             </span>
                           </Button>
                         </div>

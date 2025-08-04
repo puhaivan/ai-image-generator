@@ -6,6 +6,7 @@ export const useHistory = (user) => {
   const [history, setHistory] = useState([])
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedImage, setSelectedImage] = useState(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -38,6 +39,7 @@ export const useHistory = (user) => {
   }
 
   const handleDelete = async (id) => {
+    setDeleting(true)
     if (!id || typeof id !== 'string') {
       console.error('❌ Cannot delete image: ID is missing or invalid')
       return
@@ -49,6 +51,8 @@ export const useHistory = (user) => {
       setModalOpen(false)
     } catch (err) {
       console.error('❌ Could not delete image:', err.message)
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -61,5 +65,6 @@ export const useHistory = (user) => {
     setModalOpen,
     handleHistoryClick,
     handleDelete,
+    deleting,
   }
 }

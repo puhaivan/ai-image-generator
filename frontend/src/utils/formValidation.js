@@ -4,6 +4,9 @@ export const FORM_FIELDS = {
   FIRSTNAME: 'firstName',
   LASTNAME: 'lastName',
   EMAIL: 'email',
+  NAME: 'name',
+  MESSAGE: 'message',
+  PROMPT: 'prompt',
 }
 
 const getValidationRule = (field) => {
@@ -25,16 +28,28 @@ const getValidationRule = (field) => {
       message: 'Reset code must be exactly 6 digits',
     },
     [FORM_FIELDS.FIRSTNAME]: {
-      value: /^[a-zA-Z]{4,}$/,
-      message: 'Name must contain at least 4 letters and only letters',
+      value: /^[a-zA-Z]{2,}$/,
+      message: 'First name must contain at least 2 letters',
     },
     [FORM_FIELDS.LASTNAME]: {
-      value: /^[a-zA-Z]{4,}$/,
-      message: 'Last name must contain at least 4 letters and only letters',
+      value: /^[a-zA-Z]{2,}$/,
+      message: 'Last name must contain at least 2 letters',
     },
     [FORM_FIELDS.EMAIL]: {
       value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
       message: 'Enter a valid email address',
+    },
+    [FORM_FIELDS.NAME]: {
+      value: /^.{2,}$/,
+      message: 'Name must be at least 2 characters long',
+    },
+    [FORM_FIELDS.MESSAGE]: {
+      value: /^.{5,}$/,
+      message: 'Message must be at least 5 characters long',
+    },
+    [FORM_FIELDS.PROMPT]: {
+      value: /^(?!\d+$)(?![^a-zA-Z0-9]+$).{4,100}$/,
+      message: 'Prompt must be 4–100 characters and not only numbers/symbols',
     },
   }
 
