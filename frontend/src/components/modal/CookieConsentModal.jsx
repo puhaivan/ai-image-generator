@@ -1,24 +1,24 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import Modal from './Modal'
 import Button from '../button/Button'
 
-function CookieConsent() {
-  const [showConsent, setShowConsent] = useState(false)
-
+function CookieConsent({ isOpen, setIsOpen }) {
   useEffect(() => {
     const consentGiven = localStorage.getItem('cookieConsent')
     if (!consentGiven) {
-      setShowConsent(true)
+      setIsOpen(true)
     }
-  }, [])
+  }, [setIsOpen])
 
   const handleAccept = () => {
     localStorage.setItem('cookieConsent', 'true')
-    setShowConsent(false)
+    setIsOpen(false)
   }
 
+  if (!isOpen) return null
+
   return (
-    <Modal isOpen={showConsent} onClose={() => setShowConsent(false)}>
+    <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
       <div className="text-center p-4">
         <h2 className="text-lg font-semibold text-gray-800 mb-2">We Use Cookies</h2>
         <p className="text-sm text-gray-600 mb-4">

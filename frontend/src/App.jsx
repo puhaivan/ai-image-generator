@@ -57,6 +57,7 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [imageUrl, setImageUrl] = useState(null)
   const [mobilePanelOpen, setMobilePanelOpen] = useState(false)
+  const [isCookieConsentOpen, setIsCookieConsentOpen] = useState(false)
 
   const { handleGenerate } = useGenerateImage({
     setImageUrl,
@@ -200,7 +201,7 @@ function App() {
       />
       <Interactive3D />
       <Footer />
-      <CookieConsent />
+      <CookieConsent isOpen={isCookieConsentOpen} setIsOpen={setIsCookieConsentOpen} />
     </>
   )
 }
