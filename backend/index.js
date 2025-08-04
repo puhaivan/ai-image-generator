@@ -38,17 +38,14 @@ const API_URL = process.env.STABILITY_API_URL
 
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://ai-image-generator-ten-jet.vercel.app',
-  /\.vercel\.app$/,
+  'https://promtify-aig.com',
+  'https://www.promtify-aig.com',
 ]
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (
-        !origin ||
-        allowedOrigins.some((o) => (typeof o === 'string' ? o === origin : o.test(origin)))
-      ) {
+      if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true)
       } else {
         callback(new Error('Not allowed by CORS'))
@@ -68,7 +65,8 @@ app.use(
     cookie: {
       secure: isProduction,
       httpOnly: true,
-      sameSite: isProduction ? 'None' : 'lax',
+      sameSite: isProduction ? 'None' : 'Lax',
+      domain: isProduction ? '.promtify-aig.com' : undefined,
     },
   })
 )

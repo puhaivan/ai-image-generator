@@ -10,6 +10,15 @@ const generateToken = (user) => {
   })
 }
 
+const cookieOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? 'None' : 'Lax',
+  domain: isProduction ? '.promtify-aig.com' : undefined,
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+}
+
+// ====================== GET ME ======================
 export const getMe = async (req, res) => {
   try {
     if (req.user) {
@@ -32,16 +41,11 @@ export const getMe = async (req, res) => {
     }
 
     const token = req.cookies.token
-    if (!token) {
-      return res.status(401).end()
-    }
+    if (!token) return res.status(401).end()
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
     const user = await User.findById(decoded.id)
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' })
-    }
+    if (!user) return res.status(404).json({ error: 'User not found' })
 
     if (!user.isVerified) {
       return res.status(403).json({
@@ -65,15 +69,16 @@ export const getMe = async (req, res) => {
   }
 }
 
+// ====================== LOGOUT ======================
 export const logout = (req, res) => {
   try {
     const finish = () => {
       res.clearCookie('token', {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? 'None' : 'Lax',
+        ...cookieOptions,
       })
-      res.clearCookie('connect.sid')
+      res.clearCookie('connect.sid', {
+        ...cookieOptions,
+      })
       res.status(200).json({ message: 'Logout successful' })
     }
 
@@ -83,7 +88,6 @@ export const logout = (req, res) => {
           console.error('Logout error:', err)
           return res.status(500).json({ message: 'Logout failed' })
         }
-
         if (req.session) {
           req.session.destroy((err) => {
             if (err) console.error('Session destroy error:', err)
@@ -102,6 +106,7 @@ export const logout = (req, res) => {
   }
 }
 
+// ====================== REGISTER ======================
 export const register = async (req, res) => {
   try {
     const { phoneNumber, password, firstName, lastName, email } = req.body
@@ -109,31 +114,26 @@ export const register = async (req, res) => {
     if (!phoneNumber || !password || !firstName || !lastName || !email) {
       return res.status(400).json({ error: 'All fields are required' })
     }
-
     if (!/^\+\d{10,15}$/.test(phoneNumber)) {
       return res.status(400).json({ error: 'Invalid phone number format' })
     }
-
     if (password.length < 6) {
       return res.status(400).json({ error: 'Password must be at least 6 characters' })
     }
-
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ error: 'Invalid email format' })
     }
 
     const existingUser = await User.findOne({ email })
-
     if (existingUser) {
       const method = existingUser.loginMethod
-
       const error =
         method === 'google'
           ? 'This email is already registered via Google. Please log in with Google.'
           : 'Email is already registered. Please log in.'
-
       return res.status(400).json({ error })
     }
+
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString()
     const newUser = new User({
       phoneNumber,
@@ -154,47 +154,34 @@ export const register = async (req, res) => {
     )
 
     const token = generateToken(newUser)
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? 'None' : 'Lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    })
+    res.cookie('token', token, cookieOptions)
 
     res.json({ message: 'Registration successful', token })
   } catch (err) {
     console.error('❌ Registration error:', err.message)
-
     if (err.code === 11000) {
       const duplicateField = Object.keys(err.keyValue)[0]
-      const duplicateValue = err.keyValue[duplicateField]
       return res.status(400).json({
         error:
           duplicateField === 'email'
             ? 'This email is already registered'
-            : duplicateField === 'phoneNumber'
-              ? 'This phone number is already registered'
-              : `Duplicate value: ${duplicateValue}`,
+            : 'This phone number is already registered',
       })
     }
-
     res.status(500).json({ error: 'Server error during registration' })
   }
 }
 
+// ====================== LOGIN ======================
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body
-
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' })
     }
 
     const user = await User.findOne({ email })
-
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password' })
-    }
+    if (!user) return res.status(401).json({ error: 'Invalid email or password' })
 
     if (user.loginMethod === 'google') {
       return res.status(400).json({
@@ -203,9 +190,7 @@ export const login = async (req, res) => {
     }
 
     const isMatch = await user.comparePassword(password)
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid email or password' })
-    }
+    if (!isMatch) return res.status(401).json({ error: 'Invalid email or password' })
 
     if (!user.isVerified) {
       return res.status(200).json({
@@ -216,13 +201,7 @@ export const login = async (req, res) => {
     }
 
     const token = generateToken(user)
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? 'None' : 'Lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    })
-
+    res.cookie('token', token, cookieOptions)
     res.json({ message: 'Login successful', token })
   } catch (err) {
     console.error('❌ Login error:', err.message)
@@ -230,6 +209,7 @@ export const login = async (req, res) => {
   }
 }
 
+// ====================== CHANGE PASSWORD ======================
 export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body
@@ -258,14 +238,13 @@ export const changePassword = async (req, res) => {
   }
 }
 
+// ====================== VERIFY EMAIL ======================
 export const verifyEmail = async (req, res) => {
   const { email, code } = req.body
 
   const user = await User.findOne({ email })
   if (!user) return res.status(404).json({ error: 'User not found' })
-
   if (user.isVerified) return res.status(400).json({ error: 'User already verified' })
-
   if (user.verificationCode !== code) {
     return res.status(400).json({ error: 'Invalid verification code' })
   }
@@ -275,16 +254,11 @@ export const verifyEmail = async (req, res) => {
   await user.save()
 
   const token = generateToken(user)
-  res.cookie('token', token, {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'None' : 'Lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  })
-
+  res.cookie('token', token, cookieOptions)
   res.json({ message: 'Email verified successfully', token })
 }
 
+// ====================== RESEND VERIFICATION ======================
 export const resendVerification = async (req, res) => {
   try {
     const { email } = req.body
@@ -309,6 +283,7 @@ export const resendVerification = async (req, res) => {
   }
 }
 
+// ====================== FORGOT PASSWORD ======================
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body
@@ -325,7 +300,6 @@ export const forgotPassword = async (req, res) => {
     await user.save()
 
     await sendEmail(user.email, 'Reset Your Password', `Your code is: ${code}`)
-
     res.json({ message: 'Reset code sent to your email' })
   } catch (err) {
     console.error('❌ Forgot Password error:', err.message)
@@ -333,14 +307,13 @@ export const forgotPassword = async (req, res) => {
   }
 }
 
+// ====================== RESET PASSWORD ======================
 export const resetPassword = async (req, res) => {
   try {
     const { email, code, newPassword } = req.body
 
     const user = await User.findOne({ email })
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' })
-    }
+    if (!user) return res.status(404).json({ error: 'User not found' })
 
     if (user.resetCode !== code || !user.resetCodeExpires || user.resetCodeExpires < Date.now()) {
       return res.status(400).json({ error: 'Invalid or expired reset code' })
@@ -356,7 +329,6 @@ export const resetPassword = async (req, res) => {
     user.password = newPassword
     user.resetCode = undefined
     user.resetCodeExpires = undefined
-
     await user.save()
 
     res.json({ message: 'Password has been reset successfully. You can now log in.' })
