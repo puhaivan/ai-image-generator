@@ -16,6 +16,7 @@ import EmailVerifyPage from './pages/EmailVerifyPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import Footer from './components/Footer'
 import Interactive3D from './components/Interactive3D'
+import CookieConsent from './components/modal/CookieConsentModal'
 
 import { downloadImage } from './utils/downloadImage'
 import { useGenerateImage } from './hooks/useGenerateImage'
@@ -105,7 +106,7 @@ function App() {
                 <UserPanel user={user} handleLogout={handleLogout} />
 
                 <div className="flex-1 p-4">
-                  <div className="min-h-screen bg-gray-100 text-gray-900 px-4 py-8">
+                  <div className=" bg-gray-100 text-gray-900 px-4 py-8">
                     <h1 className="text-4xl font-bold text-center mb-4">AI Image Generator</h1>
                     <p className="text-center mb-8 text-gray-600">Turn words into art</p>
 
@@ -199,6 +200,7 @@ function App() {
       />
       <Interactive3D />
       <Footer />
+      <CookieConsent />
     </>
   )
 }
