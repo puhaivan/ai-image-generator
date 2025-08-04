@@ -160,7 +160,7 @@ function App() {
                           >
                             <span className="inline-flex justify-center items-center gap-2 w-full">
                               {deleting ? (
-                                <Spinner size="sm" />
+                                <Spinner size="sm" message="" />
                               ) : (
                                 <>
                                   Delete
