@@ -102,12 +102,19 @@ app.post('/generate', authenticateUser, async (req, res) => {
         Authorization: `Bearer ${process.env.STABILITY_API_KEY}`,
         ...form.getHeaders(),
       },
+      validateStatus: () => true,
     })
+
+    if (!response.data || !response.data.image) {
+      console.error('❌ Stability API error or unsafe prompt:', response.data)
+      return res.status(400).json({
+        error: 'Prompt contains disallowed or unsafe content.',
+      })
+    }
 
     const imageBase64 = response.data.image
     const imageUrl = await uploadImageToS3(imageBase64, prompt)
 
-    // ✅ Use req.user._id directly
     const newImage = await Image.create({
       userId: req.user._id,
       url: imageUrl,
