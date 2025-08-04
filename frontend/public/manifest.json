@@ -1,0 +1,26 @@
+{
+  "name": "Promtify AIG",
+  "short_name": "Promtify",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "description": "Generate stunning AI images with Promtify AIG. Secure login, image history, and free AI image generation online.",
+  "icons": [
+    {
+      "src": "/images/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
