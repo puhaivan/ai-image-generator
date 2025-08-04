@@ -6,6 +6,14 @@ const router = express.Router()
 const isProduction = process.env.NODE_ENV === 'production'
 const frontendURL = isProduction ? 'https://promtify-aig.com' : 'http://localhost:5173'
 
+const cookieOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: 'None',
+  domain: isProduction ? '.promtify-aig.com' : undefined,
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+}
+
 router.get(
   '/google',
   passport.authenticate('google', {
@@ -17,28 +25,23 @@ router.get(
 router.get(
   '/google/callback',
   passport.authenticate('google', {
-    failureRedirect: '/auth/google/failure',
+    failureRedirect: `${frontendURL}/?authOpen=login&error=auth_method`,
     session: false,
   }),
   (req, res) => {
-    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, {
-      expiresIn: '7d',
-    })
+    const token = jwt.sign(
+      { id: req.user._id, phoneNumber: req.user.phoneNumber || null },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    )
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: 'None',
-      domain: isProduction ? '.promtify-aig.com' : undefined,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    })
-
-    res.redirect(frontendURL)
+    res.cookie('token', token, cookieOptions)
+    return res.redirect(frontendURL)
   }
 )
 
 router.get('/google/failure', (req, res) => {
-  res.redirect(`${frontendURL}/?authOpen=login&error=auth_method`)
+  return res.redirect(`${frontendURL}/?authOpen=login&error=auth_method`)
 })
 
 export default router

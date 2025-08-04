@@ -12,7 +12,7 @@ const generateToken = (user) =>
 const cookieOptions = {
   httpOnly: true,
   secure: isProduction,
-  sameSite: 'None', // must be None for cross-domain
+  sameSite: 'None', // Required for cross-domain cookies
   domain: isProduction ? '.promtify-aig.com' : undefined,
   maxAge: 7 * 24 * 60 * 60 * 1000,
 }
@@ -65,6 +65,7 @@ export const logout = (req, res) => {
 export const register = async (req, res) => {
   try {
     const { phoneNumber, password, firstName, lastName, email } = req.body
+
     if (!phoneNumber || !password || !firstName || !lastName || !email) {
       return res.status(400).json({ error: 'All fields are required' })
     }
@@ -163,6 +164,35 @@ export const login = async (req, res) => {
   }
 }
 
+// ====================== CHANGE PASSWORD ======================
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body
+    const user = req.user
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Both current and new passwords are required' })
+    }
+
+    const isMatch = await user.comparePassword(currentPassword)
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Current password is incorrect' })
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters' })
+    }
+
+    user.password = newPassword
+    await user.save()
+
+    res.json({ message: 'Password changed successfully' })
+  } catch (err) {
+    console.error('❌ Change password error:', err)
+    res.status(500).json({ error: 'Server error during password change' })
+  }
+}
+
 // ====================== VERIFY EMAIL ======================
 export const verifyEmail = async (req, res) => {
   const { email, code } = req.body
@@ -180,6 +210,31 @@ export const verifyEmail = async (req, res) => {
   const token = generateToken(user)
   res.cookie('token', token, cookieOptions)
   res.json({ message: 'Email verified successfully', token })
+}
+
+// ====================== RESEND VERIFICATION ======================
+export const resendVerification = async (req, res) => {
+  try {
+    const { email } = req.body
+    const user = await User.findOne({ email })
+
+    if (!user) return res.status(404).json({ error: 'User not found' })
+    if (user.isVerified) return res.status(400).json({ error: 'User already verified' })
+
+    user.verificationCode = Math.floor(100000 + Math.random() * 900000).toString()
+    await user.save()
+
+    await sendEmail(
+      email,
+      'Verify your email',
+      `Hello ${user.firstName}, your new verification code is: ${user.verificationCode}`
+    )
+
+    res.json({ message: 'Verification code resent successfully' })
+  } catch (err) {
+    console.error('❌ Resend verification error:', err.message)
+    res.status(500).json({ error: 'Server error while resending verification code' })
+  }
 }
 
 // ====================== FORGOT / RESET PASSWORD ======================
