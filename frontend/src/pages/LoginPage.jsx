@@ -13,6 +13,7 @@ function LoginPage() {
     handleAuthSubmit,
     setResetStep,
     setShowResetModal,
+    isVerifyingLogin,
   } = useAuth()
 
   return (
@@ -27,6 +28,7 @@ function LoginPage() {
           onSubmit={handleAuthSubmit}
           setResetStep={setResetStep}
           setShowResetModal={setShowResetModal}
+          isVerifyingLogin={isVerifyingLogin}
         />
       </div>
     </div>

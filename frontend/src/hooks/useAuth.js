@@ -16,6 +16,7 @@ export const useAuth = () => {
   const [verificationError, setVerificationError] = useState(null)
   const [isRegistering, setIsRegistering] = useState(false)
   const [isRequestingResetCode, setIsRequestingResetCode] = useState(false)
+  const [isVerifyingLogin, setIsVerifyingLogin] = useState(false)
   const [resetRequestError, setResetRequestError] = useState(null)
   const [resetStep, setResetStep] = useState('request')
 
@@ -58,50 +59,65 @@ export const useAuth = () => {
           setUnverifiedEmail(data.email)
           setShowVerificationStep(true)
         }
+        setUser(null)
         return
       }
-
       if (res.status === 401) {
         setUser(null)
         return
       }
 
-      if (!res.ok) throw new Error('Failed to fetch user info')
+      if (!res.ok) {
+        throw new Error(`Auth check failed: ${res.status}`)
+      }
 
       const data = await res.json()
       setUser(data)
     } catch (err) {
-      if (err.message !== 'Email not verified') {
-        console.error('❌ Unexpected auth check error:', err.message)
-      }
+      console.error('❌ Unexpected auth check error:', err.message)
       setUser(null)
+      throw err
     }
   }
 
   const handleLogin = async (credentials) => {
-    const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify(credentials),
-    })
+    setIsVerifyingLogin(true)
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(credentials),
+      })
 
-    const data = await res.json()
+      if (res.status === 401) {
+        const data = await res.json()
+        setFormErrors((prev) => ({
+          ...prev,
+          general: data.error || 'Invalid email or password',
+        }))
+        return
+      }
 
-    if (res.status === 200 && data.requiresVerification) {
-      setUnverifiedEmail(data.email)
-      setShowVerificationStep(true)
-      return
-    }
+      if (!res.ok) throw new Error(`Login failed: ${res.status}`)
 
-    if (res.ok) {
+      const data = await res.json()
+
+      if (data.requiresVerification) {
+        setUnverifiedEmail(data.email)
+        setShowVerificationStep(true)
+        return
+      }
+
       await loadUser()
+      setIsVerifyingLogin(false)
       toast.success('Login successful')
       navigate('/')
-    } else {
+    } catch (err) {
+      console.error('❌ Unexpected login error:', err.message)
       setFormErrors((prev) => ({
         ...prev,
-        general: data.error || 'Something went wrong',
+        general: 'Unexpected server error. Please try again.',
       }))
     }
   }
@@ -246,14 +262,25 @@ export const useAuth = () => {
   }
 
   const handleLogout = async () => {
-    await fetch(`${API_BASE_URL}/api/auth/logout`, {
-      method: 'POST',
-      credentials: 'include',
-    })
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      })
 
-    setUser(null)
-    navigate('/')
-    toast.success('Logged out')
+      if (!res.ok && res.status !== 401) {
+        throw new Error(`Logout failed: ${res.status}`)
+      }
+
+      setUser(null)
+      navigate('/')
+      toast.success('Logged out')
+    } catch (err) {
+      console.error('❌ Unexpected logout error:', err.message)
+      toast.error('Unexpected server error while logging out')
+      setUser(null)
+      navigate('/')
+    }
   }
 
   const handleForgotPassword = async (email) => {
@@ -358,5 +385,7 @@ export const useAuth = () => {
     resetStep,
     handleResendResetCode,
     handleResendVerificationCode,
+    isVerifyingLogin,
+    setIsVerifyingLogin,
   }
 }

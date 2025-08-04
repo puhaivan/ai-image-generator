@@ -4,8 +4,9 @@ import Button from '../button/Button'
 import { API_BASE_URL } from '../../utils/constants'
 import { useEffect } from 'react'
 import { toast } from 'react-toastify'
+import Spinner from '../spinner/spinner'
 
-function Login({ formValues, setFormValues, formErrors, onSubmit }) {
+function Login({ formValues, setFormValues, formErrors, onSubmit, isVerifyingLogin }) {
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -76,10 +77,9 @@ function Login({ formValues, setFormValues, formErrors, onSubmit }) {
         Forgot password?
       </button>
 
-      <Button type="submit" fullWidth>
-        Login
+      <Button type="submit" fullWidth disabled={isVerifyingLogin}>
+        {isVerifyingLogin ? <Spinner size={3} message="" /> : 'Login'}
       </Button>
-
       <div className="relative">
         <div className="my-2 border-t border-gray-300" />
         <span className="absolute left-1/2 -top-3 -translate-x-1/2 bg-white px-2 text-xs text-gray-400">
