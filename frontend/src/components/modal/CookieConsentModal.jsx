@@ -18,7 +18,7 @@ function CookieConsent() {
   }
 
   return (
-    <Modal isOpen={showConsent} onClose={handleAccept}>
+    <Modal isOpen={showConsent} onClose={() => setShowConsent(false)}>
       <div className="text-center p-4">
         <h2 className="text-lg font-semibold text-gray-800 mb-2">We Use Cookies</h2>
         <p className="text-sm text-gray-600 mb-4">
