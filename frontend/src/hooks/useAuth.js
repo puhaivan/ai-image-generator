@@ -90,8 +90,9 @@ export const useAuth = () => {
         body: JSON.stringify(credentials),
       })
 
-      if (res.status === 401) {
-        const data = await res.json()
+      const data = await res.json()
+
+      if (res.status === 400 || res.status === 401) {
         setFormErrors((prev) => ({
           ...prev,
           general: data.error || 'Invalid email or password',
@@ -101,8 +102,6 @@ export const useAuth = () => {
 
       if (!res.ok) throw new Error(`Login failed: ${res.status}`)
 
-      const data = await res.json()
-
       if (data.requiresVerification) {
         setUnverifiedEmail(data.email)
         setShowVerificationStep(true)
@@ -110,7 +109,6 @@ export const useAuth = () => {
       }
 
       await loadUser()
-      setIsVerifyingLogin(false)
       toast.success('Login successful')
       navigate('/')
     } catch (err) {
@@ -119,6 +117,8 @@ export const useAuth = () => {
         ...prev,
         general: 'Unexpected server error. Please try again.',
       }))
+    } finally {
+      setIsVerifyingLogin(false)
     }
   }
 

@@ -12,12 +12,11 @@ const generateToken = (user) =>
 const cookieOptions = {
   httpOnly: true,
   secure: isProduction,
-  sameSite: 'None', // Required for cross-domain cookies
+  sameSite: 'None',
   domain: isProduction ? '.promtify-aig.com' : undefined,
   maxAge: 7 * 24 * 60 * 60 * 1000,
 }
 
-// ====================== GET ME ======================
 export const getMe = async (req, res) => {
   try {
     const token = req.cookies.token
@@ -49,7 +48,6 @@ export const getMe = async (req, res) => {
   }
 }
 
-// ====================== LOGOUT ======================
 export const logout = (req, res) => {
   try {
     res.clearCookie('token', cookieOptions)
@@ -61,7 +59,6 @@ export const logout = (req, res) => {
   }
 }
 
-// ====================== REGISTER ======================
 export const register = async (req, res) => {
   try {
     const { phoneNumber, password, firstName, lastName, email } = req.body
@@ -127,7 +124,6 @@ export const register = async (req, res) => {
   }
 }
 
-// ====================== LOGIN ======================
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body
@@ -159,12 +155,10 @@ export const login = async (req, res) => {
     res.cookie('token', token, cookieOptions)
     res.json({ message: 'Login successful', token })
   } catch (err) {
-    console.error('❌ Login error:', err.message)
     res.status(500).json({ error: 'Server error during login' })
   }
 }
 
-// ====================== CHANGE PASSWORD ======================
 export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body
@@ -193,7 +187,6 @@ export const changePassword = async (req, res) => {
   }
 }
 
-// ====================== VERIFY EMAIL ======================
 export const verifyEmail = async (req, res) => {
   const { email, code } = req.body
   const user = await User.findOne({ email })
@@ -212,7 +205,6 @@ export const verifyEmail = async (req, res) => {
   res.json({ message: 'Email verified successfully', token })
 }
 
-// ====================== RESEND VERIFICATION ======================
 export const resendVerification = async (req, res) => {
   try {
     const { email } = req.body
@@ -237,7 +229,6 @@ export const resendVerification = async (req, res) => {
   }
 }
 
-// ====================== FORGOT / RESET PASSWORD ======================
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body
