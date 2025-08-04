@@ -36,11 +36,7 @@ const PORT = process.env.PORT || 3001
 
 const API_URL = process.env.STABILITY_API_URL
 
-const allowedOrigins = [
-  'http://localhost:5173',
-  'https://promtify-aig.com',
-  'https://www.promtify-aig.com',
-]
+const allowedOrigins = ['http://localhost:5173', 'https://promtify-aig.com']
 
 app.use(
   cors({
