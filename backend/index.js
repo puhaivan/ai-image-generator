@@ -107,9 +107,9 @@ app.post('/generate', authenticateUser, async (req, res) => {
     const imageBase64 = response.data.image
     const imageUrl = await uploadImageToS3(imageBase64, prompt)
 
-    const user = await User.findOne({ phoneNumber: req.user.phoneNumber })
+    // ✅ Use req.user._id directly
     const newImage = await Image.create({
-      userId: user._id,
+      userId: req.user._id,
       url: imageUrl,
       prompt,
     })

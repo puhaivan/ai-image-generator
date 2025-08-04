@@ -29,14 +29,26 @@ router.get(
     session: false,
   }),
   (req, res) => {
-    const token = jwt.sign(
-      { id: req.user._id, phoneNumber: req.user.phoneNumber || null },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    )
+    try {
+      if (!req.user) {
+        return res.redirect(`${frontendURL}/?authOpen=login&error=google_auth`)
+      }
 
-    res.cookie('token', token, cookieOptions)
-    return res.redirect(frontendURL)
+      const token = jwt.sign(
+        {
+          id: req.user._id,
+          phoneNumber: req.user.phoneNumber || null,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+      )
+
+      res.cookie('token', token, cookieOptions)
+      return res.redirect(frontendURL)
+    } catch (err) {
+      console.error('❌ Google callback error:', err)
+      return res.redirect(`${frontendURL}/?authOpen=login&error=server`)
+    }
   }
 )
 

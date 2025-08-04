@@ -1,12 +1,8 @@
 import Image from '../models/Image.js'
-import User from '../models/User.js'
 
 export const getUserHistory = async (req, res) => {
   try {
-    const user = await User.findOne({ phoneNumber: req.user.phoneNumber })
-    if (!user) return res.status(404).json({ error: 'User not found' })
-
-    const images = await Image.find({ userId: user._id })
+    const images = await Image.find({ userId: req.user._id })
       .sort({ createdAt: -1 })
       .select('_id url prompt createdAt')
 

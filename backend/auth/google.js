@@ -21,26 +21,30 @@ passport.use(
         const email = profile.emails?.[0]?.value
         if (!email) return done(null, false, { message: 'Email not available from Google' })
 
-        const existingUser = await User.findOne({ email })
+        let user = await User.findOne({ googleId: profile.id })
 
-        if (existingUser) {
-          if (existingUser.loginMethod !== 'google') {
-            return done(null, false, { message: 'auth_method' })
-          }
-          return done(null, existingUser)
+        if (!user) {
+          user = await User.findOne({ email })
         }
 
-        const newUser = await User.create({
-          googleId: profile.id,
-          email,
-          firstName: profile.name?.givenName || '',
-          lastName: profile.name?.familyName || '',
-          avatar: profile.photos?.[0]?.value || '',
-          loginMethod: 'google',
-          isVerified: true,
-        })
+        if (user && !user.googleId) {
+          user.googleId = profile.id
+          await user.save()
+        }
 
-        return done(null, newUser)
+        if (!user) {
+          user = await User.create({
+            googleId: profile.id,
+            email,
+            firstName: profile.name?.givenName || '',
+            lastName: profile.name?.familyName || '',
+            avatar: profile.photos?.[0]?.value || '',
+            loginMethod: 'google',
+            isVerified: true,
+          })
+        }
+
+        return done(null, user)
       } catch (err) {
         console.error('❌ Google Auth error:', err)
         return done(err, null)
