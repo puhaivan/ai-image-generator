@@ -3,7 +3,8 @@ import passport from 'passport'
 import jwt from 'jsonwebtoken'
 
 const router = express.Router()
-const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173'
+const isProduction = process.env.NODE_ENV === 'production'
+const frontendURL = isProduction ? 'https://promtify-aig.com' : 'http://localhost:5173'
 
 router.get(
   '/google',
@@ -27,9 +28,11 @@ router.get(
     res.cookie('token', token, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction ? 'None' : 'Lax',
+      sameSite: 'None',
+      domain: isProduction ? '.promtify-aig.com' : undefined,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
+
     res.redirect(frontendURL)
   }
 )
