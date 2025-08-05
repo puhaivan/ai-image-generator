@@ -24,7 +24,7 @@ This project was built as a **portfolio project** to demonstrate **full-stack de
 
 ### 1. Home Page
 
-![Home Page](./demo/home.png)
+![Home Page](./demo/homepage.png)
 
 ### 2. Login & Registration
 
