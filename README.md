@@ -20,31 +20,59 @@ This project was built as a **portfolio project** to demonstrate **full-stack de
 
 ---
 
+## 📸 Screenshots
+
+### 1. Home Page
+
+![Home Page](./demo/home.png)
+
+### 2. Login & Registration
+
+![Login](./demo/login.png)
+
+### 3. Dashboard – Image Generation
+
+![Dashboard](./demo/dashboard.png)
+
+### 4. Image History & Deletion
+
+![History](./demo/history.png)
+
+### 5. Contact Modal
+
+![Contact](./demo/contact.png)
+
+### 5. User Panel
+
+![Account](./demo/account.png)
+
+---
+
 ## 📸 Features
 
-- **AI Image Generation**  
+- **AI Image Generation**
   - Uses **Stability AI** API to generate images from text prompts
   - Handles **unsafe prompt filtering** gracefully
 
-- **User Authentication**  
+- **User Authentication**
   - Email & Password authentication with **JWT cookies**
   - **Google OAuth 2.0** support
   - Password reset & email verification flows
 
-- **User Dashboard**  
+- **User Dashboard**
   - View personal **image history** (stored in MongoDB)
   - Delete images securely with S3 cleanup
   - Fully **responsive design** with mobile-first UI
 
-- **Contact Form**  
+- **Contact Form**
   - Built-in modal form to contact support
   - Toast notifications for success/failure
 
-- **Legal Pages**  
+- **Legal Pages**
   - Privacy Policy & Terms of Service with modern UI
   - Linked in footer and accessible via SPA navigation
 
-- **Security & UX**  
+- **Security & UX**
   - Cookies are `httpOnly`, `SameSite=None` for secure cross-domain auth
   - Validation for all forms and prompts
   - Clean error handling with friendly messages
@@ -54,12 +82,14 @@ This project was built as a **portfolio project** to demonstrate **full-stack de
 ## 🛠️ Tech Stack
 
 **Frontend:**
+
 - React 18 + Vite
 - TailwindCSS
 - React Router DOM
 - React Toastify (notifications)
 
 **Backend:**
+
 - Node.js + Express
 - MongoDB + Mongoose
 - Passport.js (Google OAuth)
@@ -68,8 +98,9 @@ This project was built as a **portfolio project** to demonstrate **full-stack de
 - Stability AI API (Image Generation)
 
 **Deployment & Hosting:**
-- Frontend: Vercel / Netlify *(or your chosen host)*
-- Backend: VPS / Render / Railway *(depending on your setup)*
+
+- Frontend: Vercel / Netlify _(or your chosen host)_
+- Backend: VPS / Render / Railway _(depending on your setup)_
 - Database: MongoDB Atlas
 - Storage: AWS S3
 
@@ -94,8 +125,6 @@ This project is licensed under the MIT License.
 ## 🙋 About the Author
 
 **Ivan Puha**  
-Full-Stack Developer | React, Node.js 
+Full-Stack Developer | React, Node.js
 
 [LinkedIn](https://www.linkedin.com/in/ivan-puga/)
-
-
