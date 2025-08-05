@@ -14,6 +14,8 @@ import RegisterPage from './pages/RegistrationPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import EmailVerifyPage from './pages/EmailVerifyPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsOfService from './pages/TermsOfService'
 import Footer from './components/Footer'
 import Interactive3D from './components/Interactive3D'
 import CookieConsent from './components/modal/CookieConsentModal'
@@ -59,6 +61,7 @@ function App() {
   const [imageUrl, setImageUrl] = useState(null)
   const [mobilePanelOpen, setMobilePanelOpen] = useState(false)
   const [isCookieConsentOpen, setIsCookieConsentOpen] = useState(false)
+  const [isContactOpen, setIsContactOpen] = useState(false)
 
   const { handleGenerate } = useGenerateImage({
     setImageUrl,
@@ -184,6 +187,14 @@ function App() {
         <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/auth/verify" element={<EmailVerifyPage />} />
         <Route path="/auth/reset" element={<ResetPasswordPage />} />
+        <Route
+          path="/privacy-policy"
+          element={<PrivacyPolicy setContactOpen={setIsContactOpen} />}
+        />
+        <Route
+          path="/terms-of-service"
+          element={<TermsOfService setContactOpen={setIsContactOpen} />}
+        />
       </Routes>
 
       <ToastContainer
@@ -208,7 +219,7 @@ function App() {
         progressClassName="bg-blue-500"
       />
       <Interactive3D />
-      <Footer />
+      <Footer contactOpen={isContactOpen} setContactOpen={setIsContactOpen} />
       <CookieConsent isOpen={isCookieConsentOpen} setIsOpen={setIsCookieConsentOpen} />
     </>
   )
