@@ -1,18 +1,11 @@
-import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Modal from './modal/Modal'
-import Button from './button/Button'
 import ContactForm from './forms/ContactForm'
 
-const Footer = () => {
+const Footer = ({ contactOpen, setContactOpen }) => {
   const currentYear = new Date().getFullYear()
-  const [modalOpen, setModalOpen] = useState(false)
-  const [modalTitle, setModalTitle] = useState('')
-  const [contactOpen, setContactOpen] = useState(false)
 
-  const handleOpenModal = (title) => {
-    setModalTitle(title)
-    setModalOpen(true)
-  }
+  const navigate = useNavigate()
 
   return (
     <footer className="bg-gradient-to-r from-blue-100 to-purple-100 mt-8 rounded-t-xl shadow-inner">
@@ -25,13 +18,13 @@ const Footer = () => {
         <div className="flex gap-6 text-sm text-gray-600">
           <button
             className="hover:text-gray-900 transition cursor-pointer hover:underline"
-            onClick={() => handleOpenModal('Privacy Policy')}
+            onClick={() => navigate('/privacy-policy')}
           >
             Privacy Policy
           </button>
           <button
             className="hover:text-gray-900 transition cursor-pointer hover:underline"
-            onClick={() => handleOpenModal('Terms of Service')}
+            onClick={() => navigate('/terms-of-service')}
           >
             Terms of Service
           </button>
@@ -49,17 +42,6 @@ const Footer = () => {
         </div>
       </div>
 
-      {modalOpen && (
-        <Modal onClose={() => setModalOpen(false)}>
-          <div className="p-4 text-center">
-            <h2 className="text-xl font-bold mb-2">{modalTitle}</h2>
-            <p className="text-gray-600 mb-4">Coming soon...</p>
-            <Button fullWidth onClick={() => setModalOpen(false)} className="mt-2">
-              Close
-            </Button>
-          </div>
-        </Modal>
-      )}
       {contactOpen && (
         <Modal onClose={() => setContactOpen(false)}>
           <ContactForm onClose={() => setContactOpen(false)} />
