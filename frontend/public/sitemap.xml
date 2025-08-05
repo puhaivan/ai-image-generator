@@ -1,26 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
+  <!-- Home Page -->
   <url>
     <loc>https://promtify-aig.com/</loc>
     <priority>1.0</priority>
+    <changefreq>weekly</changefreq>
   </url>
 
- 
+  <!-- Authentication Pages -->
   <url>
     <loc>https://promtify-aig.com/auth/login</loc>
     <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://promtify-aig.com/auth/register</loc>
     <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://promtify-aig.com/auth/reset</loc>
     <priority>0.6</priority>
+    <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://promtify-aig.com/auth/forgot-password</loc>
     <priority>0.6</priority>
+    <changefreq>monthly</changefreq>
   </url>
+
+  <!-- Legal Pages -->
+  <url>
+    <loc>https://promtify-aig.com/privacy-policy</loc>
+    <priority>0.4</priority>
+    <changefreq>yearly</changefreq>
+  </url>
+  <url>
+    <loc>https://promtify-aig.com/terms-of-service</loc>
+    <priority>0.4</priority>
+    <changefreq>yearly</changefreq>
+  </url>
+
 </urlset>
